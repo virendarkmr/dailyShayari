@@ -1,9 +1,28 @@
 package com.dailyshayari
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -18,9 +37,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -41,9 +65,13 @@ import com.dailyshayari.viewmodel.HomeViewModelFactory
 import java.util.Calendar
 import kotlin.random.Random
 
+fun isHindi(text: String): Boolean {
+    return text.any { it in '\u0900'..'\u097F' }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navigateTo: (Screen) -> Unit) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(context, FirebaseModule.provideFirestore())
@@ -56,9 +84,7 @@ fun HomeScreen() {
             topBar = {
                 TopAppBar(
                     title = { Text("Shayari Vibes", style = MaterialTheme.typography.headlineLarge, color = luxuryText.appTitle) },
-                    navigationIcon = {
-                        AppLogo()
-                    },
+                    navigationIcon = { AppLogo() },
                     actions = {
                         IconButton(onClick = { /* TODO */ }) {
                             Icon(
@@ -68,21 +94,17 @@ fun HomeScreen() {
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
                 )
             },
             bottomBar = {
-                BottomAppBar(
-                    containerColor = MaterialTheme.colorScheme.background
-                ) {
+                BottomAppBar(containerColor = MaterialTheme.colorScheme.background) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
                         BottomNavigationItem(Icons.Rounded.Home, "Home", true)
-                        BottomNavigationItem(Icons.Rounded.Search, "Explore")
+                        BottomNavigationItem(Icons.Rounded.Search, "Explore", navigateTo = navigateTo)
                         BottomNavigationItem(Icons.Rounded.Favorite, "Create")
                         BottomNavigationItem(Icons.Rounded.Search, "Search")
                         BottomNavigationItem(Icons.Rounded.Person, "Profile")
@@ -94,7 +116,7 @@ fun HomeScreen() {
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
-                    .padding(ScreenPadding)
+                    .padding(horizontal = ScreenPadding) // Use only horizontal padding
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(GridSpacing)
             ) {
@@ -102,8 +124,19 @@ fun HomeScreen() {
                     "Today's Special",
                     style = MaterialTheme.typography.headlineMedium,
                     color = luxuryText.appTitle
+                    // Removed extra top padding
                 )
-                TodaysSpecial(shayaris = todaysShayari)
+
+                AnimatedVisibility(
+                    visible = todaysShayari.isNotEmpty(),
+                    enter = fadeIn(animationSpec = tween(500, easing = FastOutSlowInEasing)) +
+                            slideInVertically(
+                                initialOffsetY = { 40 },
+                                animationSpec = tween(500, easing = FastOutSlowInEasing)
+                            )
+                ) {
+                    TodaysSpecial(shayaris = todaysShayari)
+                }
 
                 Text(
                     "Quick Collections",
@@ -125,9 +158,16 @@ fun HomeScreen() {
 }
 
 @Composable
-fun BottomNavigationItem(icon: ImageVector, label: String, selected: Boolean = false) {
+fun BottomNavigationItem(icon: ImageVector, label: String, selected: Boolean = false, navigateTo: ((Screen) -> Unit)? = null) {
     val luxuryText = LocalLuxuryTextColors.current
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable {
+            if (navigateTo != null && label == "Explore") {
+                navigateTo(Screen.Explore)
+            }
+        }
+    ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
@@ -140,18 +180,13 @@ fun BottomNavigationItem(icon: ImageVector, label: String, selected: Boolean = f
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TodaysSpecial(shayaris: List<Shayari>) {
-    val luxuryText = LocalLuxuryTextColors.current
     val context = LocalContext.current
     val images = remember {
-        val allImageIds = (1..19).map {
-            context.resources.getIdentifier("bg_$it", "drawable", context.packageName)
-        }.filter { it != 0 }
-
+        val allImageIds = (1..19).map { context.resources.getIdentifier("bg_$it", "drawable", context.packageName) }.filter { it != 0 }
         val calendar = Calendar.getInstance()
         val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
         val year = calendar.get(Calendar.YEAR)
         val seed = year * 1000 + dayOfYear
-
         allImageIds.shuffled(Random(seed)).take(10)
     }
 
@@ -173,21 +208,32 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                     .height(300.dp)
                     .clip(RoundedCornerShape(28.dp))
             ) {
+                val brightness = 0.93f
+                val colorMatrix = floatArrayOf(
+                    brightness, 0f, 0f, 0f, 0f,
+                    0f, brightness, 0f, 0f, 0f,
+                    0f, 0f, brightness, 0f, 0f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+
                 AsyncImage(
                     model = images.getOrElse(page % images.size) { R.drawable.bg_1 },
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    colorFilter = ColorFilter.colorMatrix(ColorMatrix(colorMatrix))
                 )
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.45f))
                             )
                         )
                 )
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -197,22 +243,29 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                 ) {
                     val shayari = shayaris.getOrNull(page)
                     if (shayari != null) {
+                        val fontFamily = if (isHindi(shayari.text)) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
+                        val textShadow = Shadow(
+                            color = Color.Black.copy(alpha = 0.5f),
+                            offset = Offset(0f, 2f),
+                            blurRadius = 6f
+                        )
+                        val shayariStyle = TextStyle(
+                            fontFamily = fontFamily,
+                            fontSize = 22.sp,
+                            lineHeight = 30.sp,
+                            textAlign = TextAlign.Center,
+                            letterSpacing = 0.3.sp,
+                            color = Color.White.copy(alpha = 0.92f),
+                            shadow = textShadow
+                        )
+
                         AutoSizeText(
                             text = shayari.text,
-                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 30.sp),
-                            color = luxuryText.body,
-                            textAlign = TextAlign.Center,
-                            maxFontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                            style = shayariStyle,
+                            maxFontSize = 22.sp,
                             minFontSize = 12.sp,
-                            maxLines = 10, // A reasonable max line count
+                            maxLines = 10,
                             modifier = Modifier.fillMaxWidth()
-                        )
-                    } else {
-                        Text(
-                            text = "No shayari available today.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = luxuryText.body,
-                            textAlign = TextAlign.Center
                         )
                     }
                 }
@@ -221,44 +274,45 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                         .fillMaxWidth()
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { /* TODO */ }) {
                         Icon(
                             imageVector = Icons.Rounded.FavoriteBorder,
                             contentDescription = "Like",
-                            tint = luxuryText.appTitle
-                        )
-                    }
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(
-                            imageVector = Icons.Rounded.BookmarkBorder,
-                            contentDescription = "Save",
-                            tint = luxuryText.appTitle
+                            tint = GoldPrimary,
+                            modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
                         )
                     }
                     IconButton(onClick = { /* TODO */ }) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
                             contentDescription = "Share",
-                            tint = luxuryText.appTitle
+                            tint = GoldPrimary,
+                            modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
                         )
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val currentPage = pagerState.currentPage
-            repeat(pagerState.pageCount) { index ->
-                val color = if (index == currentPage) GoldPrimary else GoldSoft.copy(alpha = 0.5f)
+            repeat(pagerState.pageCount) {
+                val color = if (it == currentPage) GoldPrimary else Color.Gray.copy(alpha = 0.4f)
+                val scale by animateFloatAsState(
+                    targetValue = if (it == currentPage) 1.2f else 1f,
+                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                    label = "dotScaleAnimation"
+                )
                 Box(
                     modifier = Modifier
+                        .scale(scale)
                         .size(8.dp)
                         .clip(CircleShape)
                         .background(color)
@@ -272,14 +326,13 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
 fun AutoSizeText(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
     textAlign: TextAlign? = null,
     style: TextStyle,
     maxFontSize: TextUnit = style.fontSize,
     minFontSize: TextUnit = 12.sp,
 ) {
-    var scaledTextStyle by remember { mutableStateOf(style.copy(fontSize = maxFontSize)) }
+    var scaledTextStyle by remember { mutableStateOf(style) }
     var readyToDraw by remember { mutableStateOf(false) }
 
     Text(
@@ -289,7 +342,6 @@ fun AutoSizeText(
                 drawContent()
             }
         },
-        color = color,
         maxLines = maxLines,
         textAlign = textAlign,
         style = scaledTextStyle,
@@ -314,20 +366,8 @@ fun AutoSizeText(
 fun ShayariCard(title: String, subtitle: String) {
     val luxuryText = LocalLuxuryTextColors.current
 
-    val cardSurfaceGradient = Brush.verticalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-            Color.Black
-        )
-    )
-
-    val cardGlow = Brush.radialGradient(
-        colors = listOf(
-            GoldPrimary.copy(alpha = 0.1f),
-            Color.Transparent
-        ),
-        radius = 200f
-    )
+    val cardSurfaceGradient = Brush.verticalGradient(colors = listOf(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), Color.Black))
+    val cardGlow = Brush.radialGradient(colors = listOf(GoldPrimary.copy(alpha = 0.1f), Color.Transparent), radius = 200f)
 
     Box(
         modifier = Modifier
@@ -336,28 +376,16 @@ fun ShayariCard(title: String, subtitle: String) {
             .background(cardSurfaceGradient, RoundedCornerShape(28.dp))
             .border(
                 width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        GoldPrimary.copy(alpha = 0.2f),
-                        GoldPrimary.copy(alpha = 0.05f)
-                    )
-                ),
+                brush = Brush.verticalGradient(colors = listOf(GoldPrimary.copy(alpha = 0.2f), GoldPrimary.copy(alpha = 0.05f))),
                 shape = RoundedCornerShape(28.dp)
             )
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, color = luxuryText.body)
                 Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = luxuryText.secondary)
             }
-            Icon(
-                imageVector = Icons.Rounded.ArrowForward,
-                contentDescription = "Arrow",
-                tint = luxuryText.secondary
-            )
+            Icon(imageVector = Icons.Rounded.ArrowForward, contentDescription = "Arrow", tint = luxuryText.secondary)
         }
     }
 }
@@ -376,17 +404,11 @@ fun CategoryGrid() {
     )
     Column(verticalArrangement = Arrangement.spacedBy(GridSpacing)) {
         categories.chunked(2).forEach { rowItems ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(GridSpacing),
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(GridSpacing)) {
                 rowItems.forEach { categoryInfo ->
-                    Box(modifier = Modifier.weight(1f)) {
-                        CategoryCard(categoryInfo)
-                    }
+                    Box(modifier = Modifier.weight(1f)) { CategoryCard(categoryInfo) }
                 }
-                if (rowItems.size < 2) {
-                    Spacer(Modifier.weight(1f))
-                }
+                if (rowItems.size < 2) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
@@ -396,27 +418,9 @@ fun CategoryGrid() {
 fun CategoryCard(categoryInfo: CategoryInfo) {
     val luxuryText = LocalLuxuryTextColors.current
 
-    val cardSurfaceGradient = Brush.verticalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-            Color.Black
-        )
-    )
-
-    val cardGlow = Brush.radialGradient(
-        colors = listOf(
-            GoldPrimary.copy(alpha = 0.1f),
-            Color.Transparent
-        ),
-        radius = 200f
-    )
-
-    val iconContainerGradient = Brush.verticalGradient(
-        colors = listOf(
-            GoldPrimary.copy(alpha = 0.3f),
-            GoldPrimary.copy(alpha = 0.1f)
-        )
-    )
+    val cardSurfaceGradient = Brush.verticalGradient(colors = listOf(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), Color.Black))
+    val cardGlow = Brush.radialGradient(colors = listOf(GoldPrimary.copy(alpha = 0.1f), Color.Transparent), radius = 200f)
+    val iconContainerGradient = Brush.verticalGradient(colors = listOf(GoldPrimary.copy(alpha = 0.3f), GoldPrimary.copy(alpha = 0.1f)))
 
     Box(
         modifier = Modifier
@@ -425,12 +429,7 @@ fun CategoryCard(categoryInfo: CategoryInfo) {
             .background(cardSurfaceGradient, RoundedCornerShape(28.dp))
             .border(
                 width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        GoldPrimary.copy(alpha = 0.2f),
-                        GoldPrimary.copy(alpha = 0.05f)
-                    )
-                ),
+                brush = Brush.verticalGradient(colors = listOf(GoldPrimary.copy(alpha = 0.2f), GoldPrimary.copy(alpha = 0.05f))),
                 shape = RoundedCornerShape(28.dp)
             )
     ) {
@@ -444,49 +443,21 @@ fun CategoryCard(categoryInfo: CategoryInfo) {
             Box(
                 modifier = Modifier
                     .size(56.dp)
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        spotColor = GoldPrimary.copy(alpha = 0.3f),
-                        ambientColor = Color.Black
-                    )
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp), spotColor = GoldPrimary.copy(alpha = 0.3f), ambientColor = Color.Black)
                     .background(iconContainerGradient, RoundedCornerShape(16.dp))
-                    .border(
-                        width = 1.dp,
-                        color = GoldPrimary.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(16.dp)
-                    ),
+                    .border(width = 1.dp, color = GoldPrimary.copy(alpha = 0.5f), shape = RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = categoryInfo.icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                    tint = GoldPrimary
-                )
+                Icon(imageVector = categoryInfo.icon, contentDescription = null, modifier = Modifier.size(28.dp), tint = GoldPrimary)
             }
-
-            Text(
-                text = categoryInfo.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = luxuryText.body
-            )
+            Text(text = categoryInfo.name, style = MaterialTheme.typography.titleMedium, color = luxuryText.body)
         }
-        // Top light highlight
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth(0.7f)
                 .height(2.dp)
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            GoldPrimary.copy(alpha = 0.3f),
-                            Color.Transparent
-                        )
-                    )
-                )
+                .background(brush = Brush.horizontalGradient(colors = listOf(Color.Transparent, GoldPrimary.copy(alpha = 0.3f), Color.Transparent)))
         )
     }
 }
@@ -494,7 +465,5 @@ fun CategoryCard(categoryInfo: CategoryInfo) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    ShayariTheme {
-        HomeScreen()
-    }
+    ShayariTheme { HomeScreen(navigateTo = {}) }
 }
