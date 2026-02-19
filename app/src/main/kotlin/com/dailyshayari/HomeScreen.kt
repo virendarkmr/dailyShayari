@@ -27,6 +27,8 @@ import androidx.compose.material.icons.rounded.SentimentDissatisfied
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,16 +40,29 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.dailyshayari.data.Shayari
+import com.dailyshayari.di.FirebaseModule
 import com.dailyshayari.ui.theme.*
+import com.dailyshayari.viewmodel.HomeViewModel
+import com.dailyshayari.viewmodel.HomeViewModelFactory
 import java.util.Calendar
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
+    val context = LocalContext.current
+    val viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(context, FirebaseModule.provideFirestore())
+    )
+    val todaysShayari by viewModel.todaysShayari.collectAsState()
+
     ShayariTheme {
         val luxuryText = LocalLuxuryTextColors.current
         Scaffold(
@@ -101,7 +116,7 @@ fun HomeScreen() {
                     style = MaterialTheme.typography.headlineMedium,
                     color = luxuryText.appTitle
                 )
-                TodaysSpecial()
+                TodaysSpecial(shayaris = todaysShayari)
 
                 Text(
                     "Quick Collections",
@@ -137,7 +152,7 @@ fun BottomNavigationItem(icon: ImageVector, label: String, selected: Boolean = f
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TodaysSpecial() {
+fun TodaysSpecial(shayaris: List<Shayari>) {
     val luxuryText = LocalLuxuryTextColors.current
     val context = LocalContext.current
     val images = remember {
@@ -152,7 +167,9 @@ fun TodaysSpecial() {
 
         allImageIds.shuffled(Random(seed)).take(10)
     }
-    val pagerState = rememberPagerState(pageCount = { images.size })
+
+    val pageCount = if (shayaris.isNotEmpty()) shayaris.size else 1
+    val pagerState = rememberPagerState(pageCount = { pageCount })
     val itemWidth = 250.dp
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val contentPadding = (screenWidth - itemWidth) / 2
@@ -170,7 +187,7 @@ fun TodaysSpecial() {
                     .clip(RoundedCornerShape(28.dp))
             ) {
                 AsyncImage(
-                    model = images[page],
+                    model = images.getOrElse(page % images.size) { R.drawable.bg_1 },
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -184,6 +201,30 @@ fun TodaysSpecial() {
                             )
                         )
                 )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    val shayari = shayaris.getOrNull(page)
+                    if (shayari != null) {
+                        Text(
+                            text = shayari.text,
+                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 30.sp),
+                            color = luxuryText.body,
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        Text(
+                            text = "No shayari available today.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = luxuryText.body,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -223,7 +264,7 @@ fun TodaysSpecial() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val currentPage = pagerState.currentPage
-            repeat(images.size) { index ->
+            repeat(pagerState.pageCount) { index ->
                 val color = if (index == currentPage) GoldPrimary else GoldSoft.copy(alpha = 0.5f)
                 Box(
                     modifier = Modifier
