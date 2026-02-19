@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "com.mangoLabs.dailyShayari"
+    namespace = "com.dailyshayari"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.mangoLabs.dailyShayari"
+        applicationId = "com.dailyshayari"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -49,7 +49,9 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.material3:material3")
-    implementation(libs.androidx.material3.icons.extended)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.coil.compose)
+    implementation("androidx.compose.material:material-icons-extended")
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.tooling.preview)
     testImplementation(libs.junit)

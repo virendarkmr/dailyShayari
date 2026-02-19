@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "80515453545",
+    "project_id": "dailyshayari-3b6eb",
+    "storage_bucket": "dailyshayari-3b6eb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:80515453545:android:6a0bd32d108e00c7b288f8",
+        "android_client_info": {
+          "package_name": "com.dailyshayari"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfTsJ4_fd5DwX-0Jn9DYYrWMx8kKrsXAM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

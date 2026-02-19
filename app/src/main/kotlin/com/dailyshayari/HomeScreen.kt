@@ -1,221 +1,317 @@
-
 package com.dailyshayari
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.AutoFixHigh
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.BookmarkBorder
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Nightlight
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.SentimentDissatisfied
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.dailyshayari.ui.theme.Background
-import com.dailyshayari.ui.theme.DailyShayariTheme
-import com.dailyshayari.ui.theme.PrimaryAccent
-import com.dailyshayari.ui.theme.SecondarySurface
-import com.dailyshayari.ui.theme.TextPrimary
-import com.dailyshayari.ui.theme.TextSecondary
+import coil.compose.AsyncImage
+import com.dailyshayari.ui.theme.*
+import java.util.Calendar
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Shayari Vibes", color = TextPrimary) },
-                navigationIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Logo",
-                        tint = PrimaryAccent
+    ShayariTheme {
+        val luxuryText = LocalLuxuryTextColors.current
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Shayari Vibes", style = MaterialTheme.typography.headlineLarge, color = luxuryText.appTitle) },
+                    navigationIcon = {
+                        AppLogo()
+                    },
+                    actions = {
+                        IconButton(onClick = { /* TODO */ }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Notifications,
+                                contentDescription = "Notifications",
+                                tint = luxuryText.appTitle
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background
                     )
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = TextPrimary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Background
                 )
-            )
-        },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = Background
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
+            },
+            bottomBar = {
+                BottomAppBar(
+                    containerColor = MaterialTheme.colorScheme.background
                 ) {
-                    BottomNavigationItem(Icons.Default.Home, "Home", true)
-                    BottomNavigationItem(Icons.Default.Search, "Explore")
-                    BottomNavigationItem(Icons.Default.Add, "Create")
-                    BottomNavigationItem(Icons.Default.Search, "Search")
-                    BottomNavigationItem(Icons.Default.Person, "Profile")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        BottomNavigationItem(Icons.Rounded.Home, "Home", true)
+                        BottomNavigationItem(Icons.Rounded.Search, "Explore")
+                        BottomNavigationItem(Icons.Rounded.Favorite, "Create")
+                        BottomNavigationItem(Icons.Rounded.Search, "Search")
+                        BottomNavigationItem(Icons.Rounded.Person, "Profile")
+                    }
                 }
-            }
-        },
-        containerColor = Background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            // Search Bar
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("Search saved shayari...", color = TextSecondary) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = TextSecondary
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = SecondarySurface,
-                    focusedContainerColor = SecondarySurface,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = PrimaryAccent
-                )
-            )
-
-            // Today's Special
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(ScreenPadding)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(GridSpacing)
             ) {
                 Text(
                     "Today's Special",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = luxuryText.appTitle
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Done,
-                        contentDescription = "Offline Ready",
-                        tint = PrimaryAccent
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Offline Ready", color = PrimaryAccent, fontSize = 12.sp)
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            // Horizontal Pager for Today's Special
-            // TODO: Replace with a HorizontalPager
-            ShayariCard()
+                TodaysSpecial()
 
-            // Quick Collections
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                "Quick Collections",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            QuickCollectionItem("Good Morning", "124 Messages • Ready Offline", Icons.Default.Star)
-            Spacer(modifier = Modifier.height(8.dp))
-            QuickCollectionItem("Festival Greetings", "85 Messages • Ready Offline", Icons.Default.Star)
+                Text(
+                    "Quick Collections",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = luxuryText.appTitle
+                )
+                ShayariCard("Good Morning", "124 Messages")
+                ShayariCard("Festival Greetings", "85 Messages")
 
-
-            // Browse Categories
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
                 Text(
                     "Browse Categories",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = luxuryText.appTitle
                 )
-                Text("All Available Offline", color = TextSecondary, fontSize = 12.sp)
+                CategoryGrid()
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            CategoryGrid()
         }
     }
 }
 
 @Composable
 fun BottomNavigationItem(icon: ImageVector, label: String, selected: Boolean = false) {
+    val luxuryText = LocalLuxuryTextColors.current
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = if (selected) PrimaryAccent else TextSecondary
+            tint = if (selected) luxuryText.appTitle else luxuryText.secondary
         )
-        Text(label, color = if (selected) PrimaryAccent else TextSecondary, fontSize = 12.sp)
+        Text(label, color = if (selected) luxuryText.appTitle else luxuryText.secondary, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TodaysSpecial() {
+    val luxuryText = LocalLuxuryTextColors.current
+    val context = LocalContext.current
+    val images = remember {
+        val allImageIds = (1..19).map {
+            context.resources.getIdentifier("bg_$it", "drawable", context.packageName)
+        }.filter { it != 0 }
+
+        val calendar = Calendar.getInstance()
+        val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
+        val year = calendar.get(Calendar.YEAR)
+        val seed = year * 1000 + dayOfYear
+
+        allImageIds.shuffled(Random(seed)).take(10)
+    }
+    val pagerState = rememberPagerState(pageCount = { images.size })
+    val itemWidth = 250.dp
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val contentPadding = (screenWidth - itemWidth) / 2
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        HorizontalPager(
+            state = pagerState,
+            pageSpacing = GridSpacing,
+            contentPadding = PaddingValues(horizontal = contentPadding)
+        ) { page ->
+            Box(
+                modifier = Modifier
+                    .width(itemWidth)
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(28.dp))
+            ) {
+                AsyncImage(
+                    model = images[page],
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                            )
+                        )
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(
+                            imageVector = Icons.Rounded.FavoriteBorder,
+                            contentDescription = "Like",
+                            tint = luxuryText.appTitle
+                        )
+                    }
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(
+                            imageVector = Icons.Rounded.BookmarkBorder,
+                            contentDescription = "Save",
+                            tint = luxuryText.appTitle
+                        )
+                    }
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = "Share",
+                            tint = luxuryText.appTitle
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            val currentPage = pagerState.currentPage
+            repeat(images.size) { index ->
+                val color = if (index == currentPage) GoldPrimary else GoldSoft.copy(alpha = 0.5f)
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun ShayariCard() {
-    Card(
+fun ShayariCard(title: String, subtitle: String) {
+    val luxuryText = LocalLuxuryTextColors.current
+
+    val cardSurfaceGradient = Brush.verticalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+            Color.Black
+        )
+    )
+
+    val cardGlow = Brush.radialGradient(
+        colors = listOf(
+            GoldPrimary.copy(alpha = 0.1f),
+            Color.Transparent
+        ),
+        radius = 200f
+    )
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF6A4ADC) // Placeholder color
-        )
+            .background(cardGlow, RoundedCornerShape(28.dp))
+            .background(cardSurfaceGradient, RoundedCornerShape(28.dp))
+            .border(
+                width = 1.dp,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        GoldPrimary.copy(alpha = 0.2f),
+                        GoldPrimary.copy(alpha = 0.05f)
+                    )
+                ),
+                shape = RoundedCornerShape(28.dp)
+            )
     ) {
-        Box(modifier = Modifier.padding(16.dp)) {
-            Column {
-                Text(
-                    text = "\"",
-                    fontSize = 48.sp,
-                    color = TextPrimary.copy(alpha = 0.5f)
-                )
-                Text(
-                    "Ishq ki rahon mein khud ko khona bhi ek manzil hai...",
-                    fontSize = 18.sp,
-                    color = TextPrimary,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-                Text(
-                    "— Gulzar",
-                    fontSize = 14.sp,
-                    color = TextPrimary.copy(alpha = 0.8f),
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    ActionButton(Icons.Default.Favorite, "1.2k")
-                    ActionButton(Icons.Default.Share, "Share")
-                    ActionButton(Icons.Default.ThumbUp, "WhatsApp")
-                    ActionButton(Icons.Default.Done, "Save")
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium, color = luxuryText.body)
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = luxuryText.secondary)
+            }
+            Icon(
+                imageVector = Icons.Rounded.ArrowForward,
+                contentDescription = "Arrow",
+                tint = luxuryText.secondary
+            )
+        }
+    }
+}
+
+data class CategoryInfo(val name: String, val icon: ImageVector)
+
+@Composable
+fun CategoryGrid() {
+    val categories = listOf(
+        CategoryInfo("Love Shayari", Icons.Rounded.Favorite),
+        CategoryInfo("Sad Quotes", Icons.Rounded.SentimentDissatisfied),
+        CategoryInfo("Inspiration", Icons.Rounded.Bolt),
+        CategoryInfo("Friendship", Icons.Rounded.Group),
+        CategoryInfo("Good Night", Icons.Rounded.Nightlight),
+        CategoryInfo("Attitude", Icons.Rounded.AutoFixHigh)
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(GridSpacing)) {
+        categories.chunked(2).forEach { rowItems ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(GridSpacing),
+            ) {
+                rowItems.forEach { categoryInfo ->
+                    Box(modifier = Modifier.weight(1f)) {
+                        CategoryCard(categoryInfo)
+                    }
+                }
+                if (rowItems.size < 2) {
+                    Spacer(Modifier.weight(1f))
                 }
             }
         }
@@ -223,104 +319,108 @@ fun ShayariCard() {
 }
 
 @Composable
-fun ActionButton(icon: ImageVector, text: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-            imageVector = icon,
-            contentDescription = text,
-            tint = TextPrimary
-        )
-        Text(text, color = TextPrimary, fontSize = 12.sp)
-    }
-}
+fun CategoryCard(categoryInfo: CategoryInfo) {
+    val luxuryText = LocalLuxuryTextColors.current
 
-@Composable
-fun QuickCollectionItem(title: String, subtitle: String, icon: ImageVector) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SecondarySurface
+    val cardSurfaceGradient = Brush.verticalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+            Color.Black
         )
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                modifier = Modifier.size(40.dp),
-                tint = PrimaryAccent
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                Text(subtitle, fontSize = 12.sp, color = TextSecondary)
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Arrow",
-                tint = TextSecondary
-            )
-        }
-    }
-}
-
-@Composable
-fun CategoryGrid() {
-    val categories = listOf(
-        "Love Shayari" to Icons.Default.Favorite,
-        "Sad Quotes" to Icons.Default.Warning,
-        "Inspiration" to Icons.Default.Info,
-        "Friendship" to Icons.Default.Person,
-        "Good Night" to Icons.Default.Info,
-        "Attitude" to Icons.Default.Star
     )
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(categories.size) { index ->
-            val (name, icon) = categories[index]
-            CategoryCard(name, icon)
-        }
-    }
-}
 
-@Composable
-fun CategoryCard(name: String, icon: ImageVector) {
-    Card(
+    val cardGlow = Brush.radialGradient(
+        colors = listOf(
+            GoldPrimary.copy(alpha = 0.1f),
+            Color.Transparent
+        ),
+        radius = 200f
+    )
+
+    val iconContainerGradient = Brush.verticalGradient(
+        colors = listOf(
+            GoldPrimary.copy(alpha = 0.3f),
+            GoldPrimary.copy(alpha = 0.1f)
+        )
+    )
+
+    Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(28.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = SecondarySurface
-        )
+            .background(cardGlow, RoundedCornerShape(28.dp))
+            .background(cardSurfaceGradient, RoundedCornerShape(28.dp))
+            .border(
+                width = 1.dp,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        GoldPrimary.copy(alpha = 0.2f),
+                        GoldPrimary.copy(alpha = 0.05f)
+                    )
+                ),
+                shape = RoundedCornerShape(28.dp)
+            )
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = name,
-                modifier = Modifier.size(48.dp)
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(16.dp),
+                        spotColor = GoldPrimary.copy(alpha = 0.3f),
+                        ambientColor = Color.Black
+                    )
+                    .background(iconContainerGradient, RoundedCornerShape(16.dp))
+                    .border(
+                        width = 1.dp,
+                        color = GoldPrimary.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = categoryInfo.icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp),
+                    tint = GoldPrimary
+                )
+            }
+
+            Text(
+                text = categoryInfo.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = luxuryText.body
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(name, color = TextPrimary, fontSize = 14.sp)
         }
+        // Top light highlight
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth(0.7f)
+                .height(2.dp)
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            GoldPrimary.copy(alpha = 0.3f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    DailyShayariTheme {
+    ShayariTheme {
         HomeScreen()
     }
 }
