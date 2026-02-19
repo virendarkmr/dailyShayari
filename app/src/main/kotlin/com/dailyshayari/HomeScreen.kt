@@ -11,28 +11,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.BookmarkBorder
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material.icons.rounded.Group
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Nightlight
-import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.SentimentDissatisfied
-import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -40,8 +25,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -210,11 +197,15 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                 ) {
                     val shayari = shayaris.getOrNull(page)
                     if (shayari != null) {
-                        Text(
+                        AutoSizeText(
                             text = shayari.text,
                             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 30.sp),
                             color = luxuryText.body,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            maxFontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                            minFontSize = 12.sp,
+                            maxLines = 10, // A reasonable max line count
+                            modifier = Modifier.fillMaxWidth()
                         )
                     } else {
                         Text(
@@ -275,6 +266,48 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
             }
         }
     }
+}
+
+@Composable
+fun AutoSizeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    maxLines: Int = Int.MAX_VALUE,
+    textAlign: TextAlign? = null,
+    style: TextStyle,
+    maxFontSize: TextUnit = style.fontSize,
+    minFontSize: TextUnit = 12.sp,
+) {
+    var scaledTextStyle by remember { mutableStateOf(style.copy(fontSize = maxFontSize)) }
+    var readyToDraw by remember { mutableStateOf(false) }
+
+    Text(
+        text,
+        modifier = modifier.drawWithContent {
+            if (readyToDraw) {
+                drawContent()
+            }
+        },
+        color = color,
+        maxLines = maxLines,
+        textAlign = textAlign,
+        style = scaledTextStyle,
+        onTextLayout = { textLayoutResult ->
+            val overflow = textLayoutResult.didOverflowHeight || textLayoutResult.didOverflowWidth
+            if (overflow) {
+                val newFontSize = scaledTextStyle.fontSize * 0.9f
+                if (newFontSize > minFontSize) {
+                    scaledTextStyle = scaledTextStyle.copy(fontSize = newFontSize)
+                } else {
+                    scaledTextStyle = scaledTextStyle.copy(fontSize = minFontSize)
+                    readyToDraw = true
+                }
+            } else {
+                readyToDraw = true
+            }
+        }
+    )
 }
 
 @Composable
