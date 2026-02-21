@@ -1,10 +1,10 @@
 package com.dailyshayari.repository
 
-import android.content.Context
 import com.dailyshayari.data.Shayari
 import com.dailyshayari.data.TodaysSpecialDocument
 import com.dailyshayari.datastore.ShayariDataStore
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -34,8 +34,27 @@ class ShayariRepositoryImpl(
 
             if (shayaris.isNotEmpty()) {
                 dataStore.saveShayaris(shayaris, today)
+                emit(shayaris)
+            } else {
+                // If today's document is empty, fetch the most recent one
+                val recentDoc = firestore.collection("todays_special")
+                    .orderBy("date", Query.Direction.DESCENDING)
+                    .limit(1)
+                    .get()
+                    .await()
+
+                if (!recentDoc.isEmpty) {
+                    val recentShayaris = recentDoc.documents.first().toObject(TodaysSpecialDocument::class.java)?.shayari ?: emptyList()
+                    if (recentShayaris.isNotEmpty()) {
+                        dataStore.saveShayaris(recentShayaris, today) // Still save with today's date to prevent re-fetching
+                        emit(recentShayaris)
+                    } else {
+                        emit(dataStore.getCachedShayaris()) // fallback to cache
+                    }
+                } else {
+                    emit(dataStore.getCachedShayaris()) // fallback to cache
+                }
             }
-            emit(shayaris)
         } catch (e: Exception) {
             // If network fails, try to serve from cache anyway
             emit(dataStore.getCachedShayaris())

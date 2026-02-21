@@ -71,102 +71,86 @@ fun isHindi(text: String): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navigateTo: (Screen) -> Unit) {
+fun HomeScreen(currentScreen: Screen, navigateTo: (Screen) -> Unit) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(context, FirebaseModule.provideFirestore())
     )
     val todaysShayari by viewModel.todaysShayari.collectAsState()
+    val luxuryText = LocalLuxuryTextColors.current
 
-    ShayariTheme {
-        val luxuryText = LocalLuxuryTextColors.current
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Shayari Vibes", style = MaterialTheme.typography.headlineLarge, color = luxuryText.appTitle) },
-                    navigationIcon = { AppLogo() },
-                    actions = {
-                        IconButton(onClick = { /* TODO */ }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Notifications,
-                                contentDescription = "Notifications",
-                                tint = luxuryText.appTitle
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-                )
-            },
-            bottomBar = {
-                BottomAppBar(containerColor = MaterialTheme.colorScheme.background) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        BottomNavigationItem(Icons.Rounded.Home, "Home", true)
-                        BottomNavigationItem(Icons.Rounded.Search, "Explore", navigateTo = navigateTo)
-                        BottomNavigationItem(Icons.Rounded.Favorite, "Create")
-                        BottomNavigationItem(Icons.Rounded.Search, "Search")
-                        BottomNavigationItem(Icons.Rounded.Person, "Profile")
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Shayari Vibes", style = MaterialTheme.typography.headlineLarge, color = luxuryText.appTitle) },
+                navigationIcon = { AppLogo() },
+                actions = {
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Notifications,
+                            contentDescription = "Notifications",
+                            tint = luxuryText.appTitle
+                        )
                     }
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.background
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(horizontal = ScreenPadding) // Use only horizontal padding
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(GridSpacing)
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+            )
+        },
+        bottomBar = { AppBottomBar(currentScreen = currentScreen, navigateTo = navigateTo) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = ScreenPadding)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(GridSpacing)
+        ) {
+            Text(
+                "Today's Special",
+                style = MaterialTheme.typography.headlineMedium,
+                color = luxuryText.appTitle
+            )
+
+            AnimatedVisibility(
+                visible = todaysShayari.isNotEmpty(),
+                enter = fadeIn(animationSpec = tween(500, easing = FastOutSlowInEasing)) +
+                        slideInVertically(
+                            initialOffsetY = { 40 },
+                            animationSpec = tween(500, easing = FastOutSlowInEasing)
+                        )
             ) {
-                Text(
-                    "Today's Special",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = luxuryText.appTitle
-                    // Removed extra top padding
-                )
-
-                AnimatedVisibility(
-                    visible = todaysShayari.isNotEmpty(),
-                    enter = fadeIn(animationSpec = tween(500, easing = FastOutSlowInEasing)) +
-                            slideInVertically(
-                                initialOffsetY = { 40 },
-                                animationSpec = tween(500, easing = FastOutSlowInEasing)
-                            )
-                ) {
-                    TodaysSpecial(shayaris = todaysShayari)
-                }
-
-                Text(
-                    "Quick Collections",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = luxuryText.appTitle
-                )
-                ShayariCard("Good Morning", "124 Messages")
-                ShayariCard("Festival Greetings", "85 Messages")
-
-                Text(
-                    "Browse Categories",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = luxuryText.appTitle
-                )
-                CategoryGrid()
+                TodaysSpecial(shayaris = todaysShayari)
             }
+
+            Text(
+                "Quick Collections",
+                style = MaterialTheme.typography.headlineMedium,
+                color = luxuryText.appTitle
+            )
+            ShayariCard("Good Morning", "124 Messages")
+            ShayariCard("Festival Greetings", "85 Messages")
+
+            Text(
+                "Browse Categories",
+                style = MaterialTheme.typography.headlineMedium,
+                color = luxuryText.appTitle
+            )
+            CategoryGrid()
         }
     }
 }
 
 @Composable
-fun BottomNavigationItem(icon: ImageVector, label: String, selected: Boolean = false, navigateTo: ((Screen) -> Unit)? = null) {
+fun BottomNavigationItem(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
     val luxuryText = LocalLuxuryTextColors.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable {
-            if (navigateTo != null && label == "Explore") {
-                navigateTo(Screen.Explore)
-            }
-        }
+        modifier = Modifier.clickable(onClick = onClick)
     ) {
         Icon(
             imageVector = icon,
@@ -465,5 +449,5 @@ fun CategoryCard(categoryInfo: CategoryInfo) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    ShayariTheme { HomeScreen(navigateTo = {}) }
+    ShayariTheme { HomeScreen(currentScreen = Screen.Home, navigateTo = {}) }
 }

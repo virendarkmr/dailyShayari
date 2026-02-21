@@ -7,7 +7,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,11 +23,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -44,6 +44,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,13 +56,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 sealed class ShayariUiModel {
     abstract val id: Int
@@ -73,50 +75,41 @@ val luxuryGold = Color(0xFFC6A75E)
 val softWhite = Color(0xFFF5F5F5)
 
 @Composable
-fun ExploreScreen() {
+fun ExploreScreen(currentScreen: Screen, navigateTo: (Screen) -> Unit) {
     var selectedCategory by remember { mutableStateOf<String?>("All") }
+    val scrollState = rememberLazyListState()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = selectedCategory ?: "Explore",
-                        color = luxuryGold,
-                        fontWeight = FontWeight.Bold
+                    CategoryChips(
+                        selectedCategory = selectedCategory,
+                        onCategorySelected = { category -> selectedCategory = category }
                     )
                 },
-                navigationIcon = {
-                    if (selectedCategory != "All" && selectedCategory != null) {
-                        IconButton(onClick = { selectedCategory = "All" }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back",
-                                tint = luxuryGold
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
-            CategoryChips(
-                selectedCategory = selectedCategory,
-                onCategorySelected = { category -> selectedCategory = category }
-            )
-            ShayariFeed()
-        }
+        bottomBar = { AppBottomBar(currentScreen = currentScreen, navigateTo = navigateTo) }
+    ) { innerPadding ->
+        ShayariFeed(
+            modifier = Modifier.padding(innerPadding),
+            scrollState = scrollState
+        )
     }
 }
 
 @Composable
 fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Unit) {
-    val categories = listOf("All", "Love", "Sad", "Motivation", "Life")
+    val categories = listOf("All", "Love Shayari", "Sad Quotes", "Inspiration", "Friendship", "Good Night", "Attitude")
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(categories) { category ->
@@ -140,28 +133,33 @@ fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Uni
                     .clickable { onCategorySelected(category) }
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text(text = category, color = textColor, fontWeight = FontWeight.Bold)
+                Text(
+                    text = category, 
+                    color = textColor, 
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                )
             }
         }
     }
 }
 
 @Composable
-fun ShayariFeed() {
-    val items = remember {
-        listOf(
-            ShayariUiModel.Image(1, "bg_1", "Some text for the image"),
-            ShayariUiModel.Text(2, "Love", "This is a text shayari."),
-            ShayariUiModel.Image(3, "bg_2", "Another image with text"),
-            ShayariUiModel.Text(4, "Motivation", "A motivational quote."),
-        )
-    }
-
+fun ShayariFeed(modifier: Modifier = Modifier, scrollState: LazyListState) {
     LazyColumn(
+        modifier = modifier,
+        state = scrollState,
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        items(items, key = { it.id }) { item ->
+        items(Int.MAX_VALUE) { index ->
+            val item = remember(index) {
+                if (index % 3 == 0) {
+                    ShayariUiModel.Text(index, "Love", "This is a text shayari.")
+                } else {
+                    ShayariUiModel.Image(index, "bg_${(index % 20) + 1}", "Some text for the image")
+                }
+            }
+
             Box {
                 when (item) {
                     is ShayariUiModel.Text -> TextCard(item)
@@ -216,26 +214,20 @@ fun ImageCard(shayari: ShayariUiModel.Image) {
     val imageResId = remember(shayari.imageName) {
         context.resources.getIdentifier(shayari.imageName, "drawable", context.packageName)
     }
-    val fallbackResId = remember {
-        context.resources.getIdentifier("bg_1", "drawable", context.packageName)
-    }
-    val finalResId = if (imageResId != 0) imageResId else fallbackResId
 
     Card(
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Box {
-            if (finalResId != 0) {
-                Image(
-                    painter = painterResource(id = finalResId),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(3f / 4f)
-                )
-            }
+            AsyncImage(
+                model = imageResId,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(3f / 4f)
+            )
             Box(
                 modifier = Modifier
                     .matchParentSize()
