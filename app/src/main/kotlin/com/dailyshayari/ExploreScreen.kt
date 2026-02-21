@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
@@ -40,7 +41,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,16 +74,28 @@ val luxuryGold = Color(0xFFC6A75E)
 val softWhite = Color(0xFFF5F5F5)
 
 @Composable
-fun ExploreScreen() {
+fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
     var selectedCategory by remember { mutableStateOf<String?>("All") }
     val scrollState = rememberLazyListState()
 
-    Column {
-        CategoryChips(
-            selectedCategory = selectedCategory,
-            onCategorySelected = { category -> selectedCategory = category }
-        )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    CategoryChips(
+                        selectedCategory = selectedCategory,
+                        onCategorySelected = { category -> selectedCategory = category }
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        },
+        bottomBar = { AppBottomBar(pagerState = pagerState, onNavigate = onNavigate) }
+    ) { innerPadding ->
         ShayariFeed(
+            modifier = Modifier.padding(innerPadding),
             scrollState = scrollState
         )
     }
@@ -89,7 +105,7 @@ fun ExploreScreen() {
 fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Unit) {
     val categories = listOf("All", "Love Shayari", "Sad Quotes", "Inspiration", "Friendship", "Good Night", "Attitude")
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(categories) { category ->
@@ -111,12 +127,12 @@ fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Uni
                     .background(backgroundColor)
                     .border(1.dp, luxuryGold, RoundedCornerShape(50))
                     .clickable { onCategorySelected(category) }
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
             ) {
                 Text(
                     text = category,
                     color = textColor,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                 )
             }
         }
