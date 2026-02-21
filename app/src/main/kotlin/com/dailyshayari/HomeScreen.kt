@@ -71,7 +71,7 @@ fun isHindi(text: String): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(currentScreen: Screen, navigateTo: (Screen) -> Unit) {
+fun HomeScreen() {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(context, FirebaseModule.provideFirestore())
@@ -79,64 +79,43 @@ fun HomeScreen(currentScreen: Screen, navigateTo: (Screen) -> Unit) {
     val todaysShayari by viewModel.todaysShayari.collectAsState()
     val luxuryText = LocalLuxuryTextColors.current
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Shayari Vibes", style = MaterialTheme.typography.headlineLarge, color = luxuryText.appTitle) },
-                navigationIcon = { AppLogo() },
-                actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Notifications,
-                            contentDescription = "Notifications",
-                            tint = luxuryText.appTitle
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-            )
-        },
-        bottomBar = { AppBottomBar(currentScreen = currentScreen, navigateTo = navigateTo) }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = ScreenPadding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(GridSpacing)
+    Column(
+        modifier = Modifier
+            .padding(horizontal = ScreenPadding)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(GridSpacing)
+    ) {
+        Text(
+            "Today's Special",
+            style = MaterialTheme.typography.headlineMedium,
+            color = luxuryText.appTitle
+        )
+
+        AnimatedVisibility(
+            visible = todaysShayari.isNotEmpty(),
+            enter = fadeIn(animationSpec = tween(500, easing = FastOutSlowInEasing)) +
+                    slideInVertically(
+                        initialOffsetY = { 40 },
+                        animationSpec = tween(500, easing = FastOutSlowInEasing)
+                    )
         ) {
-            Text(
-                "Today's Special",
-                style = MaterialTheme.typography.headlineMedium,
-                color = luxuryText.appTitle
-            )
-
-            AnimatedVisibility(
-                visible = todaysShayari.isNotEmpty(),
-                enter = fadeIn(animationSpec = tween(500, easing = FastOutSlowInEasing)) +
-                        slideInVertically(
-                            initialOffsetY = { 40 },
-                            animationSpec = tween(500, easing = FastOutSlowInEasing)
-                        )
-            ) {
-                TodaysSpecial(shayaris = todaysShayari)
-            }
-
-            Text(
-                "Quick Collections",
-                style = MaterialTheme.typography.headlineMedium,
-                color = luxuryText.appTitle
-            )
-            ShayariCard("Good Morning", "124 Messages")
-            ShayariCard("Festival Greetings", "85 Messages")
-
-            Text(
-                "Browse Categories",
-                style = MaterialTheme.typography.headlineMedium,
-                color = luxuryText.appTitle
-            )
-            CategoryGrid()
+            TodaysSpecial(shayaris = todaysShayari)
         }
+
+        Text(
+            "Quick Collections",
+            style = MaterialTheme.typography.headlineMedium,
+            color = luxuryText.appTitle
+        )
+        ShayariCard("Good Morning", "124 Messages")
+        ShayariCard("Festival Greetings", "85 Messages")
+
+        Text(
+            "Browse Categories",
+            style = MaterialTheme.typography.headlineMedium,
+            color = luxuryText.appTitle
+        )
+        CategoryGrid()
     }
 }
 
@@ -449,5 +428,5 @@ fun CategoryCard(categoryInfo: CategoryInfo) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    ShayariTheme { HomeScreen(currentScreen = Screen.Home, navigateTo = {}) }
+    ShayariTheme { HomeScreen() }
 }

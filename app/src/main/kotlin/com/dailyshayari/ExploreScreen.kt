@@ -40,11 +40,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +52,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -75,32 +70,16 @@ val luxuryGold = Color(0xFFC6A75E)
 val softWhite = Color(0xFFF5F5F5)
 
 @Composable
-fun ExploreScreen(currentScreen: Screen, navigateTo: (Screen) -> Unit) {
+fun ExploreScreen() {
     var selectedCategory by remember { mutableStateOf<String?>("All") }
     val scrollState = rememberLazyListState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = {
-                    CategoryChips(
-                        selectedCategory = selectedCategory,
-                        onCategorySelected = { category -> selectedCategory = category }
-                    )
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
-        bottomBar = { AppBottomBar(currentScreen = currentScreen, navigateTo = navigateTo) }
-    ) { innerPadding ->
+    Column {
+        CategoryChips(
+            selectedCategory = selectedCategory,
+            onCategorySelected = { category -> selectedCategory = category }
+        )
         ShayariFeed(
-            modifier = Modifier.padding(innerPadding),
             scrollState = scrollState
         )
     }
@@ -110,7 +89,8 @@ fun ExploreScreen(currentScreen: Screen, navigateTo: (Screen) -> Unit) {
 fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Unit) {
     val categories = listOf("All", "Love Shayari", "Sad Quotes", "Inspiration", "Friendship", "Good Night", "Attitude")
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(categories) { category ->
             val isSelected = category == selectedCategory
@@ -131,12 +111,12 @@ fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Uni
                     .background(backgroundColor)
                     .border(1.dp, luxuryGold, RoundedCornerShape(50))
                     .clickable { onCategorySelected(category) }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
             ) {
                 Text(
-                    text = category, 
-                    color = textColor, 
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                    text = category,
+                    color = textColor,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
         }
