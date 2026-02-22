@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -50,6 +51,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,7 +69,7 @@ import java.util.Calendar
 import kotlin.random.Random
 
 fun isHindi(text: String): Boolean {
-    return text.any { it in '\u0900'..'\u097F' }
+    return text.any { it in '\u0900'..'ॿ' }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,8 +121,8 @@ fun HomeScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
                 style = MaterialTheme.typography.headlineMedium,
                 color = luxuryText.appTitle
             )
-            ShayariCard("Good Morning", "124 Messages")
-            ShayariCard("Festival Greetings", "85 Messages")
+            ShayariCard("Good Morning", "")
+            ShayariCard("Festival Greetings", "")
 
             Text(
                 "Browse Categories",
@@ -359,7 +361,9 @@ fun ShayariCard(title: String, subtitle: String) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, color = luxuryText.body)
-                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = luxuryText.secondary)
+                if (subtitle.isNotEmpty()) {
+                    Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = luxuryText.secondary)
+                }
             }
             Icon(imageVector = Icons.Rounded.ArrowForward, contentDescription = "Arrow", tint = luxuryText.secondary)
         }
@@ -371,12 +375,12 @@ data class CategoryInfo(val name: String, val icon: ImageVector)
 @Composable
 fun CategoryGrid() {
     val categories = listOf(
-        CategoryInfo("Love Shayari", Icons.Rounded.Favorite),
-        CategoryInfo("Sad Quotes", Icons.Rounded.SentimentDissatisfied),
-        CategoryInfo("Inspiration", Icons.Rounded.Bolt),
+        CategoryInfo("Love", Icons.Rounded.Favorite),
+        CategoryInfo("Sad", Icons.Rounded.SentimentDissatisfied),
+        CategoryInfo("Motivation", Icons.Rounded.Bolt),
         CategoryInfo("Friendship", Icons.Rounded.Group),
-        CategoryInfo("Good Night", Icons.Rounded.Nightlight),
-        CategoryInfo("Attitude", Icons.Rounded.AutoFixHigh)
+        CategoryInfo("Gita Lines", Icons.AutoMirrored.Filled.MenuBook),
+        CategoryInfo("Quotes", Icons.Rounded.FormatQuote)
     )
     Column(verticalArrangement = Arrangement.spacedBy(GridSpacing)) {
         categories.chunked(2).forEach { rowItems ->

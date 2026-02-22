@@ -128,7 +128,7 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
 
 @Composable
 fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Unit) {
-    val categories = listOf("All", "Love Shayari", "Sad Quotes", "Inspiration", "Friendship", "Good Night", "Attitude")
+    val categories = listOf("All", "Love", "Sad", "Motivation", "Friendship", "Gita Lines", "Quotes")
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
