@@ -3,9 +3,12 @@
 
 package com.dailyshayari
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -46,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,20 +81,41 @@ val softWhite = Color(0xFFF5F5F5)
 fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
     var selectedCategory by remember { mutableStateOf<String?>("All") }
     val scrollState = rememberLazyListState()
+    val previousVisibleItemIndex = remember(scrollState) {
+        mutableStateOf(scrollState.firstVisibleItemIndex)
+    }
+    val topBarVisible by remember(scrollState) {
+        derivedStateOf {
+            val isScrollingUp = scrollState.firstVisibleItemIndex > previousVisibleItemIndex.value
+            previousVisibleItemIndex.value = scrollState.firstVisibleItemIndex
+
+            if (scrollState.firstVisibleItemIndex == 0) {
+                true
+            } else {
+                !isScrollingUp
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    CategoryChips(
-                        selectedCategory = selectedCategory,
-                        onCategorySelected = { category -> selectedCategory = category }
+            AnimatedVisibility(
+                visible = topBarVisible,
+                enter = slideInVertically(initialOffsetY = { -it }),
+                exit = slideOutVertically(targetOffsetY = { -it })
+            ) {
+                TopAppBar(
+                    title = {
+                        CategoryChips(
+                            selectedCategory = selectedCategory,
+                            onCategorySelected = { category -> selectedCategory = category }
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background
                     )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
                 )
-            )
+            }
         },
         bottomBar = { AppBottomBar(pagerState = pagerState, onNavigate = onNavigate) }
     ) { innerPadding ->
