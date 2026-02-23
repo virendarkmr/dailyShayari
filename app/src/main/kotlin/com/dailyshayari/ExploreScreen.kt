@@ -49,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,20 +67,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
-
-sealed class ShayariUiModel {
-    abstract val id: Int
-    data class Text(override val id: Int, val category: String, val text: String) : ShayariUiModel()
-    data class Image(override val id: Int, val imageName: String, val text: String) : ShayariUiModel()
-}
+import com.dailyshayari.db.ShayariEntity
+import com.dailyshayari.ui.explore.ExploreViewModel
+import kotlin.random.Random
 
 val luxuryGold = Color(0xFFC6A75E)
 val softWhite = Color(0xFFF5F5F5)
 
 @Composable
 fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
-    var selectedCategory by remember { mutableStateOf<String?>("All") }
+    val context = LocalContext.current
+    val viewModel: ExploreViewModel = viewModel(factory = ViewModelFactory(context))
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val shayaris = viewModel.shayaris.collectAsLazyPagingItems()
+
     val scrollState = rememberLazyListState()
     val previousVisibleItemIndex = remember(scrollState) {
         mutableStateOf(scrollState.firstVisibleItemIndex)
@@ -108,7 +113,7 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
                     title = {
                         CategoryChips(
                             selectedCategory = selectedCategory,
-                            onCategorySelected = { category -> selectedCategory = category }
+                            onCategorySelected = { category -> viewModel.selectCategory(category) }
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -121,7 +126,8 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
     ) { innerPadding ->
         ShayariFeed(
             modifier = Modifier.padding(innerPadding),
-            scrollState = scrollState
+            scrollState = scrollState,
+            shayaris = shayaris
         )
     }
 }
@@ -134,7 +140,7 @@ fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Uni
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(categories) { category ->
-            val isSelected = category == selectedCategory
+            val isSelected = category.equals(selectedCategory, ignoreCase = true)
             val backgroundColor by animateColorAsState(
                 targetValue = if (isSelected) luxuryGold else Color.Transparent,
                 animationSpec = tween(300),
@@ -165,26 +171,24 @@ fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Uni
 }
 
 @Composable
-fun ShayariFeed(modifier: Modifier = Modifier, scrollState: LazyListState) {
+fun ShayariFeed(
+    modifier: Modifier = Modifier,
+    scrollState: LazyListState,
+    shayaris: LazyPagingItems<ShayariEntity>
+) {
     LazyColumn(
         modifier = modifier,
         state = scrollState,
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        items(Int.MAX_VALUE) { index ->
-            val item = remember(index) {
-                if (index % 3 == 0) {
-                    ShayariUiModel.Text(index, "Love", "This is a text shayari.")
+        items(shayaris.itemCount) { index ->
+            shayaris[index]?.let { shayari ->
+                val isImageCard = remember(index) { Random.nextBoolean() }
+                if (isImageCard) {
+                    ImageCard(shayari)
                 } else {
-                    ShayariUiModel.Image(index, "bg_${(index % 20) + 1}", "Some text for the image")
-                }
-            }
-
-            Box {
-                when (item) {
-                    is ShayariUiModel.Text -> TextCard(item)
-                    is ShayariUiModel.Image -> ImageCard(item)
+                    TextCard(shayari)
                 }
             }
         }
@@ -192,7 +196,7 @@ fun ShayariFeed(modifier: Modifier = Modifier, scrollState: LazyListState) {
 }
 
 @Composable
-fun TextCard(shayari: ShayariUiModel.Text) {
+fun TextCard(shayari: ShayariEntity) {
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
@@ -212,7 +216,7 @@ fun TextCard(shayari: ShayariUiModel.Text) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = shayari.category,
+                text = shayari.category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
                 color = luxuryGold,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -230,10 +234,11 @@ fun TextCard(shayari: ShayariUiModel.Text) {
 }
 
 @Composable
-fun ImageCard(shayari: ShayariUiModel.Image) {
+fun ImageCard(shayari: ShayariEntity) {
     val context = LocalContext.current
-    val imageResId = remember(shayari.imageName) {
-        context.resources.getIdentifier(shayari.imageName, "drawable", context.packageName)
+    val imageResId = remember(shayari.id) {
+        val imageIndex = (shayari.id.hashCode() % 19) + 1
+        context.resources.getIdentifier("bg_$imageIndex", "drawable", context.packageName)
     }
 
     Card(

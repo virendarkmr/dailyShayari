@@ -1,0 +1,212 @@
+[
+  {
+    "id": "love_001",
+    "text": "तेरी मुस्कान में कुछ ऐसा नूर है,\nजैसे हर शाम में छुपा कोई सवेरा ज़रूर है।",
+    "category": "love",
+    "createdAt": 1710000000000,
+    "updatedAt": 1710000000000
+  },
+  {
+    "id": "sad_001",
+    "text": "कुछ लोग दिल के इतने क़रीब होते हैं,\nफिर भी मुक़द्दर में नहीं होते।",
+    "category": "sad",
+    "createdAt": 1709900000000,
+    "updatedAt": 1709900000000
+  },
+  {
+    "id": "motivation_001",
+    "text": "रास्ते मुश्किल सही, पर मंज़िल भी खास होगी,\nहौसला अगर साथ हो तो हर हार भी जीत होगी।",
+    "category": "motivation",
+    "createdAt": 1709800000000,
+    "updatedAt": 1709800000000
+  },
+  {
+    "id": "friendship_001",
+    "text": "दोस्ती वो नहीं जो हर रोज़ मिले,\nदोस्ती वो है जो हर हाल में साथ चले।",
+    "category": "friendship",
+    "createdAt": 1709700000000,
+    "updatedAt": 1709700000000
+  },
+  {
+    "id": "gita_001",
+    "text": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।\n(तुम्हारा अधिकार केवल कर्म करने में है, फल पर नहीं।)",
+    "category": "gita",
+    "createdAt": 1709600000000,
+    "updatedAt": 1709600000000
+  },
+  {
+    "id": "quotes_001",
+    "text": "Life is not perfect, but your attitude can be.",
+    "category": "quotes",
+    "createdAt": 1709500000000,
+    "updatedAt": 1709500000000
+  },
+  {
+    "id": "love_002",
+    "text": "Dil ke kone mein bas ek hi tasveer hai,\naur wo tumhari hai.",
+    "category": "love",
+    "createdAt": 1709400000000,
+    "updatedAt": 1709400000000
+  },
+  {
+    "id": "sad_002",
+    "text": "Kabhi kabhi khamoshi hi sabse bada jawab hoti hai.",
+    "category": "sad",
+    "createdAt": 1709300000000,
+    "updatedAt": 1709300000000
+  },
+  {
+    "id": "motivation_002",
+    "text": "Dream big, work hard, stay consistent.",
+    "category": "motivation",
+    "createdAt": 1709200000000,
+    "updatedAt": 1709200000000
+  },
+  {
+    "id": "friendship_002",
+    "text": "Yaar wahi jo musibat mein kaam aaye,\nwarna dosti to har koi nibhaaye.",
+    "category": "friendship",
+    "createdAt": 1709100000000,
+    "updatedAt": 1709100000000
+  },
+  {
+    "id": "gita_002",
+    "text": "योगस्थः कुरु कर्माणि।\n(योग में स्थित होकर अपना कर्म करो।)",
+    "category": "gita",
+    "createdAt": 1709000000000,
+    "updatedAt": 1709000000000
+  },
+  {
+    "id": "quotes_002",
+    "text": "Sometimes the strongest people are the ones who smile through silent pain.",
+    "category": "quotes",
+    "createdAt": 1708900000000,
+    "updatedAt": 1708900000000
+  },
+  {
+    "id": "love_003",
+    "text": "इश्क़ वो नहीं जो दिखाया जाए,\nइश्क़ वो है जो निभाया जाए।",
+    "category": "love",
+    "createdAt": 1708800000000,
+    "updatedAt": 1708800000000
+  },
+  {
+    "id": "sad_003",
+    "text": "The worst feeling is pretending you don’t care.",
+    "category": "sad",
+    "createdAt": 1708700000000,
+    "updatedAt": 1708700000000
+  },
+  {
+    "id": "motivation_003",
+    "text": "हर सुबह एक नया मौका है,\nखुद को बेहतर बनाने का।",
+    "category": "motivation",
+    "createdAt": 1708600000000,
+    "updatedAt": 1708600000000
+  },
+  {
+    "id": "friendship_003",
+    "text": "True friendship isn’t about being inseparable,\nit’s about being separated and nothing changes.",
+    "category": "friendship",
+    "createdAt": 1708500000000,
+    "updatedAt": 1708500000000
+  },
+  {
+    "id": "gita_003",
+    "text": "न हि कश्चित् क्षणमपि जातु तिष्ठत्यकर्मकृत्।\n(कोई भी क्षणभर भी बिना कर्म के नहीं रह सकता।)",
+    "category": "gita",
+    "createdAt": 1708400000000,
+    "updatedAt": 1708400000000
+  },
+  {
+    "id": "quotes_003",
+    "text": "Small steps every day lead to big results.",
+    "category": "quotes",
+    "createdAt": 1708300000000,
+    "updatedAt": 1708300000000
+  },
+  {
+    "id": "love_004",
+    "text": "तू पास नहीं फिर भी एहसास है,\nहर धड़कन में तेरा ही नाम है।",
+    "category": "love",
+    "createdAt": 1708200000000,
+    "updatedAt": 1708200000000
+  },
+  {
+    "id": "sad_004",
+    "text": "दिल को समझाया बहुत,\nपर दर्द मानने को तैयार नहीं।",
+    "category": "sad",
+    "createdAt": 1708100000000,
+    "updatedAt": 1708100000000
+  },
+  {
+    "id": "motivation_004",
+    "text": "Success doesn’t come from comfort zones.",
+    "category": "motivation",
+    "createdAt": 1708000000000,
+    "updatedAt": 1708000000000
+  },
+  {
+    "id": "friendship_004",
+    "text": "दोस्ती में ना हिसाब होता है,\nना जवाब होता है।",
+    "category": "friendship",
+    "createdAt": 1707900000000,
+    "updatedAt": 1707900000000
+  },
+  {
+    "id": "gita_004",
+    "text": "समत्वं योग उच्यते।\n(समभाव ही योग कहलाता है।)",
+    "category": "gita",
+    "createdAt": 1707800000000,
+    "updatedAt": 1707800000000
+  },
+  {
+    "id": "quotes_004",
+    "text": "Your vibe attracts your tribe.",
+    "category": "quotes",
+    "createdAt": 1707700000000,
+    "updatedAt": 1707700000000
+  },
+  {
+    "id": "love_005",
+    "text": "Love is not about possession,\nit’s about appreciation.",
+    "category": "love",
+    "createdAt": 1707600000000,
+    "updatedAt": 1707600000000
+  },
+  {
+    "id": "sad_005",
+    "text": "कुछ अधूरी कहानियाँ ही दिल के सबसे क़रीब होती हैं।",
+    "category": "sad",
+    "createdAt": 1707500000000,
+    "updatedAt": 1707500000000
+  },
+  {
+    "id": "motivation_005",
+    "text": "अगर ठान लिया है,\nतो जीत भी तुम्हारी ही होगी।",
+    "category": "motivation",
+    "createdAt": 1707400000000,
+    "updatedAt": 1707400000000
+  },
+  {
+    "id": "friendship_005",
+    "text": "Friendship is the comfort of knowing that even when you feel alone, you aren’t.",
+    "category": "friendship",
+    "createdAt": 1707300000000,
+    "updatedAt": 1707300000000
+  },
+  {
+    "id": "gita_005",
+    "text": "धैर्यं सर्वत्र साधनम्।\n(धैर्य हर जगह सफलता की कुंजी है।)",
+    "category": "gita",
+    "createdAt": 1707200000000,
+    "updatedAt": 1707200000000
+  },
+  {
+    "id": "quotes_005",
+    "text": "Believe in yourself and magic will happen.",
+    "category": "quotes",
+    "createdAt": 1707100000000,
+    "updatedAt": 1707100000000
+  }
+]
