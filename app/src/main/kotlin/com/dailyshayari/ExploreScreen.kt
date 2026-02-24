@@ -61,7 +61,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -79,7 +81,6 @@ import coil.compose.AsyncImage
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.explore.ExploreViewModel
 import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 val luxuryGold = Color(0xFFC6A75E)
 val softWhite = Color(0xFFF5F5F5)
@@ -206,7 +207,7 @@ fun ShayariFeed(
             if (shayaris.itemCount > 0) {
                 val actualIndex = index % shayaris.itemCount
                 shayaris[actualIndex]?.let { shayari ->
-                    val isImageCard = remember(index) { Random.nextBoolean() }
+                    val isImageCard = remember(shayari.id) { shayari.id.hashCode() % 2 == 0 }
                     if (isImageCard) {
                         ImageCard(shayari)
                     } else {
@@ -232,20 +233,37 @@ fun TextCard(shayari: ShayariEntity) {
     val gradientBrush = remember(palette) {
         Brush.radialGradient(
             colors = palette,
-            center = Offset(0f, 0f),
+            center = Offset.Zero,
             radius = 2000f
         )
     }
+    val patternColor = remember(palette) { palette.last().copy(alpha = 0.08f) }
 
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                brush = gradientBrush,
-                shape = RoundedCornerShape(24.dp)
-            )
+            .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(24.dp))
+            .drawWithContent {
+                //  Draw background gradient
+                drawRect(brush = gradientBrush)
+
+                //  Draw subtle pattern on top
+                val lineSpacing = 80f
+                var y = -200f
+                while (y < size.height + 400f) {
+                    drawLine(
+                        color = patternColor,
+                        start = Offset(-200f, y),
+                        end = Offset(size.width + 200f, y - 200f),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                    y += lineSpacing
+                }
+
+                //  Draw the composable's content (the Column)
+                drawContent()
+            }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
