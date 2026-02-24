@@ -265,6 +265,14 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                     }
                     IconButton(onClick = { /* TODO */ }) {
                         Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = "Copy",
+                            tint = GoldPrimary,
+                            modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
+                        )
+                    }
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(
                             imageVector = Icons.Rounded.Share,
                             contentDescription = "Share",
                             tint = GoldPrimary,
