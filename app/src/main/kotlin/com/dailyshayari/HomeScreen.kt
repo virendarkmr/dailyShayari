@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -65,9 +66,11 @@ import com.dailyshayari.di.FirebaseModule
 import com.dailyshayari.ui.theme.*
 import com.dailyshayari.util.copyTextToClipboard
 import com.dailyshayari.util.isHindi
-import com.dailyshayari.util.shareText
 import com.dailyshayari.viewmodel.HomeViewModel
 import com.dailyshayari.viewmodel.HomeViewModelFactory
+import dev.shreyaspatil.capturable.Capturable
+import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.random.Random
 
@@ -180,104 +183,31 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
             contentPadding = PaddingValues(horizontal = contentPadding)
         ) { page ->
             val shayari = shayaris.getOrNull(page)
-            Box(
+            val coroutineScope = rememberCoroutineScope()
+            val captureController = rememberCaptureController()
+            Column(
                 modifier = Modifier
                     .width(itemWidth)
-                    .height(300.dp)
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(28.dp))
                     .clip(RoundedCornerShape(28.dp))
             ) {
-                val brightness = 0.93f
-                val colorMatrix = floatArrayOf(
-                    brightness, 0f, 0f, 0f, 0f,
-                    0f, brightness, 0f, 0f, 0f,
-                    0f, 0f, brightness, 0f, 0f,
-                    0f, 0f, 0f, 1f, 0f
-                )
-
-                AsyncImage(
-                    model = images.getOrElse(page % images.size) { R.drawable.bg_1 },
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                    colorFilter = ColorFilter.colorMatrix(ColorMatrix(colorMatrix))
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.45f))
-                            )
-                        )
-                )
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    if (shayari != null) {
-                        val fontFamily = if (isHindi(shayari.text)) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
-                        val textShadow = Shadow(
-                            color = Color.Black.copy(alpha = 0.5f),
-                            offset = Offset(0f, 2f),
-                            blurRadius = 6f
-                        )
-                        val shayariStyle = TextStyle(
-                            fontFamily = fontFamily,
-                            fontSize = 22.sp,
-                            lineHeight = 30.sp,
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 0.3.sp,
-                            color = Color.White.copy(alpha = 0.92f),
-                            shadow = textShadow
-                        )
-
-                        AutoSizeText(
-                            text = shayari.text,
-                            style = shayariStyle,
-                            maxFontSize = 22.sp,
-                            minFontSize = 12.sp,
-                            maxLines = 10,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                Capturable(
+                    controller = captureController,
+                    onCaptured = { imageBitmap, _ ->
+                        imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
                     }
+                ) {
+                    TodaysSpecialContent(
+                        shayari = shayari,
+                        imageResId = images.getOrElse(page % images.size) { R.drawable.bg_1 }
+                    )
                 }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(
-                            imageVector = Icons.Rounded.FavoriteBorder,
-                            contentDescription = "Like",
-                            tint = GoldPrimary,
-                            modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
-                        )
-                    }
-                    IconButton(onClick = { if (shayari != null) copyTextToClipboard(context, shayari.text) }) {
-                        Icon(
-                            imageVector = Icons.Rounded.ContentCopy,
-                            contentDescription = "Copy",
-                            tint = GoldPrimary,
-                            modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
-                        )
-                    }
-                    IconButton(onClick = { if (shayari != null) shareText(context, shayari.text) }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Share,
-                            contentDescription = "Share",
-                            tint = GoldPrimary,
-                            modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
-                        )
-                    }
+                if (shayari != null) {
+                    TodaysSpecialActionRow(
+                        shayari = shayari,
+                        onShareClick = { coroutineScope.launch { captureController.capture() } },
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.6f))
+                    )
                 }
             }
         }
@@ -303,6 +233,116 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                         .background(color)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun TodaysSpecialContent(shayari: Shayari?, imageResId: Int) {
+    Box(
+        modifier = Modifier
+            .height(300.dp)
+    ) {
+        val brightness = 0.93f
+        val colorMatrix = floatArrayOf(
+            brightness, 0f, 0f, 0f, 0f,
+            0f, brightness, 0f, 0f, 0f,
+            0f, 0f, brightness, 0f, 0f,
+            0f, 0f, 0f, 1f, 0f
+        )
+
+        AsyncImage(
+            model = imageResId,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+            colorFilter = ColorFilter.colorMatrix(ColorMatrix(colorMatrix))
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.45f))
+                    )
+                )
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            if (shayari != null) {
+                val fontFamily = if (isHindi(shayari.text)) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
+                val textShadow = Shadow(
+                    color = Color.Black.copy(alpha = 0.5f),
+                    offset = Offset(0f, 2f),
+                    blurRadius = 6f
+                )
+                val shayariStyle = TextStyle(
+                    fontFamily = fontFamily,
+                    fontSize = 22.sp,
+                    lineHeight = 30.sp,
+                    textAlign = TextAlign.Center,
+                    letterSpacing = 0.3.sp,
+                    color = Color.White.copy(alpha = 0.92f),
+                    shadow = textShadow
+                )
+
+                AutoSizeText(
+                    text = shayari.text,
+                    style = shayariStyle,
+                    maxFontSize = 22.sp,
+                    minFontSize = 12.sp,
+                    maxLines = 10,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(56.dp)) // Spacer to leave room for ActionRow
+            }
+        }
+    }
+}
+
+@Composable
+fun TodaysSpecialActionRow(shayari: Shayari, onShareClick: () -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var isLiked by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = { isLiked = !isLiked }) {
+            Icon(
+                imageVector = if (isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                contentDescription = "Like",
+                tint = GoldPrimary,
+                modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
+            )
+        }
+        IconButton(onClick = { copyTextToClipboard(context, shayari.text) }) {
+            Icon(
+                imageVector = Icons.Rounded.ContentCopy,
+                contentDescription = "Copy",
+                tint = GoldPrimary,
+                modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
+            )
+        }
+        IconButton(onClick = onShareClick) {
+            Icon(
+                imageVector = Icons.Rounded.Share,
+                contentDescription = "Share",
+                tint = GoldPrimary,
+                modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
+            )
         }
     }
 }

@@ -39,8 +39,6 @@ import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,6 +55,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +67,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -84,7 +84,9 @@ import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
 import com.dailyshayari.util.copyTextToClipboard
 import com.dailyshayari.util.isHindi
-import com.dailyshayari.util.shareText
+import dev.shreyaspatil.capturable.Capturable
+import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 val luxuryGold = Color(0xFFC6A75E)
@@ -212,12 +214,7 @@ fun ShayariFeed(
             if (shayaris.itemCount > 0) {
                 val actualIndex = index % shayaris.itemCount
                 shayaris[actualIndex]?.let { shayari ->
-                    val isImageCard = remember(shayari.id) { shayari.id.hashCode() % 2 == 0 }
-                    if (isImageCard) {
-                        ImageCard(shayari)
-                    } else {
-                        TextCard(shayari)
-                    }
+                    ShayariCard(shayari = shayari)
                 }
             }
         }
@@ -233,7 +230,52 @@ private val colorPalettes = listOf(
 )
 
 @Composable
-fun TextCard(shayari: ShayariEntity) {
+fun ShayariCard(shayari: ShayariEntity) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val captureController = rememberCaptureController()
+    val isImageCard = remember(shayari.id) { shayari.id.hashCode() % 2 == 0 }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(24.dp))
+    ) {
+        // This part is captured
+        Capturable(
+            controller = captureController,
+            onCaptured = { imageBitmap, _ ->
+                imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
+            }
+        ) {
+            if (isImageCard) {
+                ImageCardContent(shayari = shayari)
+            } else {
+                TextCardContent(shayari = shayari)
+            }
+        }
+
+        // This part is NOT captured
+        val palette = remember(shayari.id) { colorPalettes.random() }
+        val actionRowBg = if (isImageCard) Color.Black.copy(alpha = 0.6f) else palette.first()
+
+        Column(modifier = Modifier.background(actionRowBg)) {
+            if (!isImageCard) {
+                Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+            }
+            ActionRow(
+                shayari = shayari,
+                onShareClick = {
+                    coroutineScope.launch { captureController.capture() }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun TextCardContent(shayari: ShayariEntity) {
     val palette = remember(shayari.id) { colorPalettes.random() }
     val gradientBrush = remember(palette) {
         Brush.radialGradient(
@@ -247,8 +289,6 @@ fun TextCard(shayari: ShayariEntity) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
-            .clip(RoundedCornerShape(24.dp))
             .drawWithContent {
                 drawRect(brush = gradientBrush)
                 val lineSpacing = 80f
@@ -281,8 +321,6 @@ fun TextCard(shayari: ShayariEntity) {
                 style = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFamily, fontSize = fontSize),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
-            ActionRow(shayari = shayari)
         }
     }
 }
@@ -301,12 +339,12 @@ object DrawableUtils {
 }
 
 @Composable
-fun ImageCard(shayari: ShayariEntity) {
+fun ImageCardContent(shayari: ShayariEntity) {
     val context = LocalContext.current
     val imageCount = remember { DrawableUtils.getBgImageCount(context) }
 
     if (imageCount == 0) {
-        TextCard(shayari = shayari)
+        TextCardContent(shayari = shayari)
         return
     }
 
@@ -315,60 +353,57 @@ fun ImageCard(shayari: ShayariEntity) {
         context.resources.getIdentifier("bg_$imageIndex", "drawable", context.packageName)
     }
 
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth()
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(3f / 4f)
     ) {
-        Box {
-            AsyncImage(
-                model = imageResId,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(3f / 4f)
-            )
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.8f)
-                            )
+        AsyncImage(
+            model = imageResId,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.8f)
                         )
                     )
-            )
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-            ) {
-                val isHindi = isHindi(shayari.text)
-                val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
-                val fontSize = if (isHindi) 22.sp else 20.sp
-                val textShadow = Shadow(color = Color.Black.copy(alpha = 0.5f), offset = Offset(0f, 2f), blurRadius = 6f)
-                Text(
-                    text = shayari.text,
-                    color = softWhite,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = fontSize,
-                        fontFamily = fontFamily,
-                        shadow = textShadow,
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                ActionRow(shayari = shayari)
-            }
+        )
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            val isHindi = isHindi(shayari.text)
+            val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
+            val fontSize = if (isHindi) 22.sp else 20.sp
+            val textShadow = Shadow(color = Color.Black.copy(alpha = 0.5f), offset = Offset(0f, 2f), blurRadius = 6f)
+            Text(
+                text = shayari.text,
+                color = softWhite,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = fontSize,
+                    fontFamily = fontFamily,
+                    shadow = textShadow,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(56.dp)) // Spacer to leave room for ActionRow
         }
     }
 }
 
 @Composable
-fun ActionRow(shayari: ShayariEntity) {
+fun ActionRow(shayari: ShayariEntity, onShareClick: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var isLiked by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -381,9 +416,9 @@ fun ActionRow(shayari: ShayariEntity) {
     )
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(top = 8.dp),
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -402,7 +437,7 @@ fun ActionRow(shayari: ShayariEntity) {
                 tint = softWhite.copy(alpha = 0.7f)
             )
         }
-        IconButton(onClick = { shareText(context, shayari.text) }) {
+        IconButton(onClick = onShareClick) {
             Icon(
                 imageVector = Icons.Rounded.Share,
                 contentDescription = "Share",
