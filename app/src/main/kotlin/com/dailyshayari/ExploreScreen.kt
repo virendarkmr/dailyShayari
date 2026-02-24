@@ -72,8 +72,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -83,7 +82,9 @@ import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.explore.ExploreViewModel
 import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
+import com.dailyshayari.util.copyTextToClipboard
 import com.dailyshayari.util.isHindi
+import com.dailyshayari.util.shareText
 import kotlin.math.absoluteValue
 
 val luxuryGold = Color(0xFFC6A75E)
@@ -273,7 +274,7 @@ fun TextCard(shayari: ShayariEntity) {
             )
             val isHindi = isHindi(shayari.text)
             val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
-            val fontSize = if (isHindi) MaterialTheme.typography.bodyLarge.fontSize + 2.sp else MaterialTheme.typography.bodyLarge.fontSize
+            val fontSize = if (isHindi) (MaterialTheme.typography.bodyLarge.fontSize.value + 2).sp else MaterialTheme.typography.bodyLarge.fontSize
             Text(
                 text = shayari.text,
                 color = softWhite,
@@ -281,7 +282,7 @@ fun TextCard(shayari: ShayariEntity) {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
-            ActionRow()
+            ActionRow(shayari = shayari)
         }
     }
 }
@@ -360,14 +361,15 @@ fun ImageCard(shayari: ShayariEntity) {
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                ActionRow()
+                ActionRow(shayari = shayari)
             }
         }
     }
 }
 
 @Composable
-fun ActionRow() {
+fun ActionRow(shayari: ShayariEntity) {
+    val context = LocalContext.current
     var isLiked by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -393,14 +395,14 @@ fun ActionRow() {
                 modifier = Modifier.scale(scale)
             )
         }
-        IconButton(onClick = { /* TODO: Copy */ }) {
+        IconButton(onClick = { copyTextToClipboard(context, shayari.text) }) {
             Icon(
                 imageVector = Icons.Rounded.ContentCopy,
                 contentDescription = "Copy",
                 tint = softWhite.copy(alpha = 0.7f)
             )
         }
-        IconButton(onClick = { /* TODO: Share */ }) {
+        IconButton(onClick = { shareText(context, shayari.text) }) {
             Icon(
                 imageVector = Icons.Rounded.Share,
                 contentDescription = "Share",

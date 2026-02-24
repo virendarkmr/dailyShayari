@@ -63,7 +63,9 @@ import coil.compose.AsyncImage
 import com.dailyshayari.data.Shayari
 import com.dailyshayari.di.FirebaseModule
 import com.dailyshayari.ui.theme.*
+import com.dailyshayari.util.copyTextToClipboard
 import com.dailyshayari.util.isHindi
+import com.dailyshayari.util.shareText
 import com.dailyshayari.viewmodel.HomeViewModel
 import com.dailyshayari.viewmodel.HomeViewModelFactory
 import java.util.Calendar
@@ -177,6 +179,7 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
             pageSpacing = GridSpacing,
             contentPadding = PaddingValues(horizontal = contentPadding)
         ) { page ->
+            val shayari = shayaris.getOrNull(page)
             Box(
                 modifier = Modifier
                     .width(itemWidth)
@@ -216,7 +219,6 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    val shayari = shayaris.getOrNull(page)
                     if (shayari != null) {
                         val fontFamily = if (isHindi(shayari.text)) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
                         val textShadow = Shadow(
@@ -260,7 +262,7 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                             modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
                         )
                     }
-                    IconButton(onClick = { /* TODO */ }) {
+                    IconButton(onClick = { if (shayari != null) copyTextToClipboard(context, shayari.text) }) {
                         Icon(
                             imageVector = Icons.Rounded.ContentCopy,
                             contentDescription = "Copy",
@@ -268,7 +270,7 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                             modifier = Modifier.shadow(elevation = 8.dp, spotColor = GoldPrimary, shape = CircleShape)
                         )
                     }
-                    IconButton(onClick = { /* TODO */ }) {
+                    IconButton(onClick = { if (shayari != null) shareText(context, shayari.text) }) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
                             contentDescription = "Share",
