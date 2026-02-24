@@ -67,6 +67,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -80,6 +81,9 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.explore.ExploreViewModel
+import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
+import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
+import com.dailyshayari.util.isHindi
 import kotlin.math.absoluteValue
 
 val luxuryGold = Color(0xFFC6A75E)
@@ -245,10 +249,7 @@ fun TextCard(shayari: ShayariEntity) {
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
             .clip(RoundedCornerShape(24.dp))
             .drawWithContent {
-                //  Draw background gradient
                 drawRect(brush = gradientBrush)
-
-                //  Draw subtle pattern on top
                 val lineSpacing = 80f
                 var y = -200f
                 while (y < size.height + 400f) {
@@ -260,8 +261,6 @@ fun TextCard(shayari: ShayariEntity) {
                     )
                     y += lineSpacing
                 }
-
-                //  Draw the composable's content (the Column)
                 drawContent()
             }
     ) {
@@ -272,10 +271,13 @@ fun TextCard(shayari: ShayariEntity) {
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+            val isHindi = isHindi(shayari.text)
+            val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
+            val fontSize = if (isHindi) MaterialTheme.typography.bodyLarge.fontSize + 2.sp else MaterialTheme.typography.bodyLarge.fontSize
             Text(
                 text = shayari.text,
                 color = softWhite,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFamily, fontSize = fontSize),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
@@ -342,11 +344,19 @@ fun ImageCard(shayari: ShayariEntity) {
                     .align(Alignment.BottomCenter)
                     .padding(16.dp)
             ) {
+                val isHindi = isHindi(shayari.text)
+                val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
+                val fontSize = if (isHindi) 22.sp else 20.sp
+                val textShadow = Shadow(color = Color.Black.copy(alpha = 0.5f), offset = Offset(0f, 2f), blurRadius = 6f)
                 Text(
                     text = shayari.text,
                     color = softWhite,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
-                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = fontSize,
+                        fontFamily = fontFamily,
+                        shadow = textShadow,
+                        textAlign = TextAlign.Center
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))

@@ -63,14 +63,11 @@ import coil.compose.AsyncImage
 import com.dailyshayari.data.Shayari
 import com.dailyshayari.di.FirebaseModule
 import com.dailyshayari.ui.theme.*
+import com.dailyshayari.util.isHindi
 import com.dailyshayari.viewmodel.HomeViewModel
 import com.dailyshayari.viewmodel.HomeViewModelFactory
 import java.util.Calendar
 import kotlin.random.Random
-
-fun isHindi(text: String): Boolean {
-    return text.any { it in '\u0900'..'ॿ' }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
