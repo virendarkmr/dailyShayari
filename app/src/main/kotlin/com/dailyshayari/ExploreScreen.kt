@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -68,6 +70,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
@@ -176,19 +179,36 @@ fun ShayariFeed(
     scrollState: LazyListState,
     shayaris: LazyPagingItems<ShayariEntity>
 ) {
+    if (shayaris.loadState.refresh is LoadState.Loading) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    if (shayaris.itemCount == 0 && shayaris.loadState.append.endOfPaginationReached) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("No shayaris found.", color = softWhite)
+        }
+        return
+    }
+
     LazyColumn(
         modifier = modifier,
         state = scrollState,
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        items(shayaris.itemCount) { index ->
-            shayaris[index]?.let { shayari ->
-                val isImageCard = remember(index) { Random.nextBoolean() }
-                if (isImageCard) {
-                    ImageCard(shayari)
-                } else {
-                    TextCard(shayari)
+        items(Int.MAX_VALUE) { index ->
+            if (shayaris.itemCount > 0) {
+                val actualIndex = index % shayaris.itemCount
+                shayaris[actualIndex]?.let { shayari ->
+                    val isImageCard = remember(index) { Random.nextBoolean() }
+                    if (isImageCard) {
+                        ImageCard(shayari)
+                    } else {
+                        TextCard(shayari)
+                    }
                 }
             }
         }
@@ -236,7 +256,7 @@ fun TextCard(shayari: ShayariEntity) {
 @Composable
 fun ImageCard(shayari: ShayariEntity) {
     val context = LocalContext.current
-    val imageResId = remember(shayari.id) {
+    val imageResId = remember(shayari.id, shayari.category) { // Keyed by id and category for more variety
         val imageIndex = (shayari.id.hashCode() % 19) + 1
         context.resources.getIdentifier("bg_$imageIndex", "drawable", context.packageName)
     }
