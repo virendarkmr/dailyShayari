@@ -3,6 +3,7 @@
 
 package com.dailyshayari
 
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -61,6 +62,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -76,6 +78,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.explore.ExploreViewModel
+import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 val luxuryGold = Color(0xFFC6A75E)
@@ -215,22 +218,32 @@ fun ShayariFeed(
     }
 }
 
+private val colorPalettes = listOf(
+    listOf(Color(0xFF2C3E50), Color(0xFF4CA1AF)),
+    listOf(Color(0xFF4B79A1), Color(0xFF283E51)),
+    listOf(Color(0xFFCC2B5E), Color(0xFF753A88)),
+    listOf(Color(0xFF134E5E), Color(0xFF71B280)),
+    listOf(Color(0xFF93291E), Color(0xFFED213A))
+)
+
 @Composable
 fun TextCard(shayari: ShayariEntity) {
+    val palette = remember(shayari.id) { colorPalettes.random() }
+    val gradientBrush = remember(palette) {
+        Brush.radialGradient(
+            colors = palette,
+            center = Offset(0f, 0f),
+            radius = 2000f
+        )
+    }
+
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.DarkGray.copy(alpha = 0.4f),
-                        Color.Black.copy(alpha = 0.8f)
-                    )
-                ),
+                brush = gradientBrush,
                 shape = RoundedCornerShape(24.dp)
             )
     ) {
@@ -253,11 +266,31 @@ fun TextCard(shayari: ShayariEntity) {
     }
 }
 
+object DrawableUtils {
+    private var imageCount: Int? = null
+    fun getBgImageCount(context: Context): Int {
+        if (imageCount != null) return imageCount!!
+        var count = 0
+        while (context.resources.getIdentifier("bg_${count + 1}", "drawable", context.packageName) != 0) {
+            count++
+        }
+        imageCount = count
+        return count
+    }
+}
+
 @Composable
 fun ImageCard(shayari: ShayariEntity) {
     val context = LocalContext.current
-    val imageResId = remember(shayari.id, shayari.category) { // Keyed by id and category for more variety
-        val imageIndex = (shayari.id.hashCode() % 19) + 1
+    val imageCount = remember { DrawableUtils.getBgImageCount(context) }
+
+    if (imageCount == 0) {
+        TextCard(shayari = shayari)
+        return
+    }
+
+    val imageResId = remember(shayari.id, shayari.category) {
+        val imageIndex = (shayari.id.hashCode().absoluteValue % imageCount) + 1
         context.resources.getIdentifier("bg_$imageIndex", "drawable", context.packageName)
     }
 
