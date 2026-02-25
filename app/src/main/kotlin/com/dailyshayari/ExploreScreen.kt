@@ -235,14 +235,43 @@ fun ShayariCard(shayari: ShayariEntity) {
     val coroutineScope = rememberCoroutineScope()
     val captureController = rememberCaptureController()
     val isImageCard = remember(shayari.id) { shayari.id.hashCode() % 2 == 0 }
+    val palette = remember(shayari.id) { colorPalettes.random() }
+
+    val cardModifier = if (isImageCard) {
+        Modifier
+    } else {
+        val gradientBrush = remember(palette) {
+            Brush.radialGradient(
+                colors = palette,
+                center = Offset.Zero,
+                radius = 2000f
+            )
+        }
+        val patternColor = remember(palette) { palette.last().copy(alpha = 0.08f) }
+        Modifier.drawWithContent {
+            drawRect(brush = gradientBrush)
+            val lineSpacing = 80f
+            var y = -200f
+            while (y < size.height + 400f) {
+                drawLine(
+                    color = patternColor,
+                    start = Offset(-200f, y),
+                    end = Offset(size.width + 200f, y - 200f),
+                    strokeWidth = 1.dp.toPx()
+                )
+                y += lineSpacing
+            }
+            drawContent()
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
             .clip(RoundedCornerShape(24.dp))
+            .then(cardModifier)
     ) {
-        // This part is captured
         Capturable(
             controller = captureController,
             onCaptured = { imageBitmap, _ ->
@@ -256,9 +285,7 @@ fun ShayariCard(shayari: ShayariEntity) {
             }
         }
 
-        // This part is NOT captured
-        val palette = remember(shayari.id) { colorPalettes.random() }
-        val actionRowBg = if (isImageCard) Color.Black.copy(alpha = 0.6f) else palette.first()
+        val actionRowBg = if (isImageCard) Color.Black.copy(alpha = 0.6f) else Color.Transparent
 
         Column(modifier = Modifier.background(actionRowBg)) {
             if (!isImageCard) {
@@ -276,52 +303,26 @@ fun ShayariCard(shayari: ShayariEntity) {
 
 @Composable
 fun TextCardContent(shayari: ShayariEntity) {
-    val palette = remember(shayari.id) { colorPalettes.random() }
-    val gradientBrush = remember(palette) {
-        Brush.radialGradient(
-            colors = palette,
-            center = Offset.Zero,
-            radius = 2000f
-        )
-    }
-    val patternColor = remember(palette) { palette.last().copy(alpha = 0.08f) }
-
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .drawWithContent {
-                drawRect(brush = gradientBrush)
-                val lineSpacing = 80f
-                var y = -200f
-                while (y < size.height + 400f) {
-                    drawLine(
-                        color = patternColor,
-                        start = Offset(-200f, y),
-                        end = Offset(size.width + 200f, y - 200f),
-                        strokeWidth = 1.dp.toPx()
-                    )
-                    y += lineSpacing
-                }
-                drawContent()
-            }
+            .padding(16.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = shayari.category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-                color = luxuryGold,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            val isHindi = isHindi(shayari.text)
-            val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
-            val fontSize = if (isHindi) (MaterialTheme.typography.bodyLarge.fontSize.value + 2).sp else MaterialTheme.typography.bodyLarge.fontSize
-            Text(
-                text = shayari.text,
-                color = softWhite,
-                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFamily, fontSize = fontSize),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-        }
+        Text(
+            text = shayari.category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+            color = luxuryGold,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        val isHindi = isHindi(shayari.text)
+        val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
+        val fontSize = if (isHindi) (MaterialTheme.typography.bodyLarge.fontSize.value + 2).sp else MaterialTheme.typography.bodyLarge.fontSize
+        Text(
+            text = shayari.text,
+            color = softWhite,
+            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFamily, fontSize = fontSize),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
     }
 }
 
