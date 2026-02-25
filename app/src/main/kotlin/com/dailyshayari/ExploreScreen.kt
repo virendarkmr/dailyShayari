@@ -270,7 +270,6 @@ fun ShayariCard(shayari: ShayariEntity) {
             .fillMaxWidth()
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
             .clip(RoundedCornerShape(24.dp))
-            .then(cardModifier)
     ) {
         Capturable(
             controller = captureController,
@@ -281,7 +280,7 @@ fun ShayariCard(shayari: ShayariEntity) {
             if (isImageCard) {
                 ImageCardContent(shayari = shayari)
             } else {
-                TextCardContent(shayari = shayari)
+                TextCardContent(shayari = shayari, modifier = cardModifier)
             }
         }
 
@@ -302,9 +301,9 @@ fun ShayariCard(shayari: ShayariEntity) {
 }
 
 @Composable
-fun TextCardContent(shayari: ShayariEntity) {
+fun TextCardContent(shayari: ShayariEntity, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
