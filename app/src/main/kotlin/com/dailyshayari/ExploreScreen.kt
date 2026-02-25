@@ -284,9 +284,9 @@ fun ShayariCard(shayari: ShayariEntity) {
             }
         }
 
-        val actionRowBg = if (isImageCard) Color.Black.copy(alpha = 0.6f) else Color.Transparent
+        val actionRowBg = if (isImageCard) Modifier.background(Color.Black.copy(alpha = 0.6f)) else cardModifier
 
-        Column(modifier = Modifier.background(actionRowBg)) {
+        Column(modifier = Modifier.fillMaxWidth().then(actionRowBg)) {
             if (!isImageCard) {
                 Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
             }
