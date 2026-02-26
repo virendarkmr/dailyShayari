@@ -1,9 +1,12 @@
+
 @file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 
 package com.dailyshayari
 
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -18,9 +21,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -31,8 +36,8 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ContentCopy
-import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -45,15 +50,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -196,7 +200,7 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
 
 @Composable
 fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Unit) {
-    val categories = listOf("All", "Love", "Sad", "Motivation", "Friendship", "Gita", "Quotes")
+    val categories = listOf("All", "Love", "Sad", "Motivation", "Friendship", "Gita Lines", "Quotes")
     LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         items(categories) { category ->
             val isSelected = category.equals(selectedCategory, ignoreCase = true)
@@ -328,17 +332,27 @@ fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) ->
 @Composable
 fun TextCardContent(shayari: ShayariEntity, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
-        Text(text = shayari.category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }, color = luxuryGold, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(bottom = 8.dp))
+        Text(
+            text = shayari.category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+            color = luxuryGold,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
         val isHindi = isHindi(shayari.text)
         val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
         val fontSize = if (isHindi) (MaterialTheme.typography.bodyLarge.fontSize.value + 2).sp else MaterialTheme.typography.bodyLarge.fontSize
-        Text(text = shayari.text, color = softWhite, style = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFamily, fontSize = fontSize), modifier = Modifier.padding(bottom = 16.dp))
+        Text(
+            text = shayari.text,
+            color = softWhite,
+            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFamily, fontSize = fontSize),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
     }
 }
 
 object DrawableUtils {
     private var imageCount: Int? = null
-    fun getBgImageCount(context: android.content.Context): Int {
+    fun getBgImageCount(context: Context): Int {
         if (imageCount != null) return imageCount!!
         var count = 0
         while (context.resources.getIdentifier("bg_${count + 1}", "drawable", context.packageName) != 0) {
@@ -364,17 +378,52 @@ fun ImageCardContent(shayari: ShayariEntity) {
         context.resources.getIdentifier("bg_$imageIndex", "drawable", context.packageName)
     }
 
-    Box(modifier = Modifier.fillMaxWidth().aspectRatio(3f / 4f)) {
-        AsyncImage(model = imageResId, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-
-        Box(modifier = Modifier.matchParentSize().background(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)))))
-
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp).padding(bottom = 56.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(3f / 4f)
+    ) {
+        AsyncImage(
+            model = imageResId,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.8f)
+                        )
+                    )
+                )
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .padding(bottom = 56.dp), // Add padding to avoid overlap with ActionRow
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             val isHindi = isHindi(shayari.text)
             val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
             val fontSize = if (isHindi) 22.sp else 20.sp
             val textShadow = Shadow(color = Color.Black.copy(alpha = 0.5f), offset = Offset(0f, 2f), blurRadius = 6f)
-            Text(text = shayari.text, color = softWhite, style = MaterialTheme.typography.bodyLarge.copy(fontSize = fontSize, fontFamily = fontFamily, shadow = textShadow, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
+            Text(
+                text = shayari.text,
+                color = softWhite,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = fontSize,
+                    fontFamily = fontFamily,
+                    shadow = textShadow,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -386,11 +435,22 @@ fun ActionRow(shayari: ShayariEntity, onShareClick: () -> Unit, modifier: Modifi
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.8f else 1f, animationSpec = tween(100), label = "")
+    val scale by animateFloatAsState(targetValue = if (isPressed) 0.8f else 1f, animationSpec = tween(100))
 
-    Row(modifier = modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         IconButton(onClick = { isLiked = !isLiked }, interactionSource = interactionSource) {
-            Icon(imageVector = if (isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, contentDescription = "Like", tint = if (isLiked) luxuryGold else softWhite.copy(alpha = 0.7f), modifier = Modifier.scale(scale))
+            Icon(
+                imageVector = if (isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                contentDescription = "Like",
+                tint = if (isLiked) luxuryGold else softWhite.copy(alpha = 0.7f),
+                modifier = Modifier.scale(scale)
+            )
         }
         IconButton(onClick = { copyTextToClipboard(context, shayari.text) }) {
             Icon(imageVector = Icons.Rounded.ContentCopy, contentDescription = "Copy", tint = softWhite.copy(alpha = 0.7f))
@@ -400,4 +460,3 @@ fun ActionRow(shayari: ShayariEntity, onShareClick: () -> Unit, modifier: Modifi
         }
     }
 }
-
