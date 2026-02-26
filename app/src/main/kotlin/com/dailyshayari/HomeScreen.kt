@@ -38,6 +38,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -70,6 +71,7 @@ import com.dailyshayari.viewmodel.HomeViewModel
 import com.dailyshayari.viewmodel.HomeViewModelFactory
 import dev.shreyaspatil.capturable.Capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.random.Random
@@ -157,6 +159,9 @@ fun BottomNavigationItem(
     }
 }
 
+// Capture delay for TodaysSpecial (milliseconds). Increase on slow devices.
+private const val TODAYS_SPECIAL_CAPTURE_DELAY_MS = 400L
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TodaysSpecial(shayaris: List<Shayari>) {
@@ -185,6 +190,8 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
             val shayari = shayaris.getOrNull(page)
             val coroutineScope = rememberCoroutineScope()
             val captureController = rememberCaptureController()
+            var isCapturing by remember { mutableStateOf(false) }
+
             Column(
                 modifier = Modifier
                     .width(itemWidth)
@@ -195,19 +202,34 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                     controller = captureController,
                     onCaptured = { imageBitmap, _ ->
                         imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
+                        isCapturing = false
                     }
                 ) {
-                    TodaysSpecialContent(
-                        shayari = shayari,
-                        imageResId = images.getOrElse(page % images.size) { R.drawable.bg_1 }
-                    )
-                }
-                if (shayari != null) {
-                    TodaysSpecialActionRow(
-                        shayari = shayari,
-                        onShareClick = { coroutineScope.launch { captureController.capture() } },
-                        modifier = Modifier.background(Color.Black.copy(alpha = 0.6f))
-                    )
+                    // Box containing both image content and action row inside Capturable
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        TodaysSpecialContent(
+                            shayari = shayari,
+                            imageResId = images.getOrElse(page % images.size) { R.drawable.bg_1 }
+                        )
+                        // ActionRow overlaid on top of image, transparent during capture
+                        if (shayari != null) {
+                            TodaysSpecialActionRow(
+                                shayari = shayari,
+                                onShareClick = {
+                                    coroutineScope.launch {
+                                        isCapturing = true
+                                        // wait for recomposition to hide action row
+                                        delay(TODAYS_SPECIAL_CAPTURE_DELAY_MS)
+                                        captureController.capture()
+                                    }
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .background(Color.Transparent)
+                                    .alpha(if (isCapturing) 0f else 1f)
+                            )
+                        }
+                    }
                 }
             }
         }

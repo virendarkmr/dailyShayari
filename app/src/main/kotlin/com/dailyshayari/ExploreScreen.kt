@@ -52,10 +52,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
@@ -88,6 +88,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
+// Offscreen capture delay (milliseconds). Increase on slow devices, decrease to reduce visible overlay time.
+private const val FULL_CAPTURE_DELAY_MS = 700L
+
 val luxuryGold = Color(0xFFC6A75E)
 val softWhite = Color(0xFFF5F5F5)
 
@@ -105,6 +108,19 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
             val isScrollingUp = scrollState.firstVisibleItemIndex > previousVisibleItemIndex.value
             previousVisibleItemIndex.value = scrollState.firstVisibleItemIndex
             if (scrollState.firstVisibleItemIndex == 0) true else !isScrollingUp
+        }
+    }
+
+    // Full-card capture controller & state: used to render a full card offscreen and capture it completely
+    val fullCaptureController = rememberCaptureController()
+    var captureTarget by remember { mutableStateOf<ShayariEntity?>(null) }
+
+    // When a capture target is set, trigger capture after a short delay so composition finishes
+    LaunchedEffect(captureTarget) {
+        if (captureTarget != null) {
+            // small delay to allow offscreen composable to measure and draw
+            delay(FULL_CAPTURE_DELAY_MS)
+            fullCaptureController.capture()
         }
     }
 
@@ -128,7 +144,46 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
         },
         bottomBar = { AppBottomBar(pagerState = pagerState, onNavigate = onNavigate) }
     ) { innerPadding ->
-        ShayariFeed(modifier = Modifier.padding(innerPadding), scrollState = scrollState, shayaris = shayaris)
+        Box(modifier = Modifier.fillMaxSize()) {
+            ShayariFeed(
+                modifier = Modifier.padding(innerPadding),
+                scrollState = scrollState,
+                shayaris = shayaris,
+                onRequestFullCapture = { sh ->
+                    // request rendering and capturing this shayari offscreen
+                    captureTarget = sh
+                }
+            )
+
+            // Offscreen/full-card Capturable overlay — only visible when captureTarget != null
+            captureTarget?.let { target ->
+                // keep a full-screen container so the overlay centers the card, but only the card box is Capturable
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Capturable(
+                        controller = fullCaptureController,
+                        onCaptured = { imageBitmap, _ ->
+                            imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
+                            // clear target to remove overlay once done
+                            captureTarget = null
+                        },
+                        // limit Capturable to card width (matches feed padding)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
+                                .clip(RoundedCornerShape(24.dp))
+                                .fillMaxWidth()
+                        ) {
+                            // Render the card content without ActionRow so the shared image doesn't include icons
+                            ImageCardContent(shayari = target)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -156,22 +211,38 @@ fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Uni
 }
 
 @Composable
-fun ShayariFeed(modifier: Modifier = Modifier, scrollState: LazyListState, shayaris: LazyPagingItems<ShayariEntity>) {
+fun ShayariFeed(
+    modifier: Modifier = Modifier,
+    scrollState: LazyListState,
+    shayaris: LazyPagingItems<ShayariEntity>,
+    onRequestFullCapture: (ShayariEntity) -> Unit = {}
+) {
     if (shayaris.loadState.refresh is LoadState.Loading) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
         return
     }
 
     if (shayaris.itemCount == 0 && shayaris.loadState.append.endOfPaginationReached) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No shayaris found.", color = softWhite) }
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("No shayaris found.", color = softWhite)
+        }
         return
     }
 
-    LazyColumn(modifier = modifier, state = scrollState, contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+    LazyColumn(
+        modifier = modifier,
+        state = scrollState,
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
         items(Int.MAX_VALUE) { index ->
             if (shayaris.itemCount > 0) {
                 val actualIndex = index % shayaris.itemCount
-                shayaris[actualIndex]?.let { shayari -> ShayariCard(shayari = shayari) }
+                shayaris[actualIndex]?.let { shayari ->
+                    ShayariCard(shayari = shayari, onRequestFullCapture = onRequestFullCapture)
+                }
             }
         }
     }
@@ -186,19 +257,16 @@ private val colorPalettes = listOf(
 )
 
 @Composable
-fun ShayariCard(shayari: ShayariEntity) {
+fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) -> Unit = {}) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val captureController = rememberCaptureController()
     val isImageCard = remember(shayari.id) { shayari.id.hashCode() % 2 == 0 }
 
     if (isImageCard) {
-        var isCapturing by remember { mutableStateOf(false) }
-
         Box(modifier = Modifier.fillMaxWidth().shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp)).clip(RoundedCornerShape(24.dp))) {
             Capturable(controller = captureController, onCaptured = { imageBitmap, _ ->
                 imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
-                isCapturing = false
             }, modifier = Modifier.fillMaxSize()) {
 
                 // Put both image and ActionRow inside Capturable so the ActionRow can be hidden (alpha=0) during capture
@@ -208,17 +276,13 @@ fun ShayariCard(shayari: ShayariEntity) {
                     ActionRow(
                         shayari = shayari,
                         onShareClick = {
-                            coroutineScope.launch {
-                                isCapturing = true
-                                // allow recomposition to apply alpha=0
-                                delay(300)
-                                captureController.capture()
-                            }
+                            // Instead of capturing the on-screen composable (which may be partially off-screen),
+                            // request a full offscreen capture rendered by ExploreScreen's overlay.
+                            onRequestFullCapture(shayari)
                         },
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .background(Color.Transparent)
-                            .alpha(if (isCapturing) 0f else 1f)
                     )
                 }
             }
