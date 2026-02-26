@@ -1,5 +1,9 @@
 package com.dailyshayari
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.FormatColorText
 import androidx.compose.material.icons.rounded.FormatSize
@@ -34,6 +39,7 @@ import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.LibraryBooks
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,6 +64,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +73,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -87,6 +95,9 @@ import com.dailyshayari.ui.explore.ExploreViewModel
 import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
 import com.dailyshayari.ui.theme.PoppinsFontFamily
+import dev.shreyaspatil.capturable.Capturable
+import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 private val colorPalettes = listOf(
@@ -149,11 +160,14 @@ fun CreateScreen() {
     var textColor by remember { mutableStateOf(Color.White) }
     var fontSize by remember { mutableStateOf(24f) }
     var fontFamily by remember { mutableStateOf<FontFamily>(FontFamily.Default) }
-    var selectedImage by remember { mutableStateOf<Int?>(null) }
+    var selectedImage by remember { mutableStateOf<Any?>(null) }
     var selectedAbstractIndex by remember { mutableStateOf<Int?>(0) }
     val viewModel: ExploreViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
+    val captureController = rememberCaptureController()
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -166,11 +180,14 @@ fun CreateScreen() {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { 
+                    IconButton(onClick = {
                         offsetX = 0f
                         offsetY = 0f
                     }) {
                         Icon(Icons.Rounded.Refresh, contentDescription = "Reset", tint = MaterialTheme.colorScheme.primary)
+                    }
+                    IconButton(onClick = { coroutineScope.launch { captureController.capture() } }) {
+                        Icon(Icons.Rounded.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = { /* TODO: Download action */ }) {
                         Icon(Icons.Rounded.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.primary)
@@ -196,121 +213,128 @@ fun CreateScreen() {
                     .padding(20.dp),
                 contentAlignment = Alignment.Center
             ) {
-                val abstractModifier = if (selectedAbstractIndex != null) {
-                    val index = selectedAbstractIndex!!
-                    val palette = colorPalettes[index % colorPalettes.size]
-                    val gradientBrush = Brush.radialGradient(colors = palette, center = Offset.Zero, radius = 2000f)
-                    val patternColor = palette.last().copy(alpha = 0.12f)
-                    Modifier.drawWithContent {
-                        drawRect(brush = gradientBrush)
-                        val patternType = index % 5
-                        when (patternType) {
-                            0 -> { // Diagonal lines
-                                val lineSpacing = 80f
-                                var y = -200f
-                                while (y < size.height + 400f) {
-                                    drawLine(color = patternColor, start = Offset(-200f, y), end = Offset(size.width + 200f, y - 200f), strokeWidth = 1.dp.toPx())
-                                    y += lineSpacing
-                                }
-                            }
-                            1 -> { // Dots grid
-                                val dotSpacing = 60f
-                                for (x in 0..(size.width / dotSpacing).toInt()) {
-                                    for (y in 0..(size.height / dotSpacing).toInt()) {
-                                        drawCircle(color = patternColor, radius = 2.dp.toPx(), center = Offset(x * dotSpacing, y * dotSpacing))
-                                    }
-                                }
-                            }
-                            2 -> { // Horizontal lines
-                                val lineSpacing = 60f
-                                var y = 0f
-                                while (y < size.height) {
-                                    drawLine(color = patternColor, start = Offset(0f, y), end = Offset(size.width, y), strokeWidth = 1.dp.toPx())
-                                    y += lineSpacing
-                                }
-                            }
-                            3 -> { // Vertical lines
-                                val lineSpacing = 60f
-                                var x = 0f
-                                while (x < size.width) {
-                                    drawLine(color = patternColor, start = Offset(x, 0f), end = Offset(x, size.height), strokeWidth = 1.dp.toPx())
-                                    x += lineSpacing
-                                }
-                            }
-                            4 -> { // Crosshatch
-                                val lineSpacing = 100f
-                                var i = -size.width
-                                while (i < size.width + size.height) {
-                                    drawLine(color = patternColor, start = Offset(i, 0f), end = Offset(i + size.height, size.height), strokeWidth = 0.5.dp.toPx())
-                                    drawLine(color = patternColor, start = Offset(i, size.height), end = Offset(i + size.height, 0f), strokeWidth = 0.5.dp.toPx())
-                                    i += lineSpacing
-                                }
-                            }
-                        }
-                        drawContent()
+                Capturable(
+                    controller = captureController,
+                    onCaptured = { bitmap, _ ->
+                        bitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
                     }
-                } else Modifier
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.85f),
-                    shape = RoundedCornerShape(28.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    Box(modifier = Modifier.fillMaxSize().then(abstractModifier)) {
-                        selectedImage?.let {
-                            AsyncImage(
-                                model = it,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                        
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .pointerInput(Unit) {
-                                    detectDragGestures { change, dragAmount ->
-                                        change.consume()
-                                        offsetX += dragAmount.x
-                                        offsetY += dragAmount.y
+                    val abstractModifier = if (selectedAbstractIndex != null) {
+                        val index = selectedAbstractIndex!!
+                        val palette = colorPalettes[index % colorPalettes.size]
+                        val gradientBrush = Brush.radialGradient(colors = palette, center = Offset.Zero, radius = 2000f)
+                        val patternColor = palette.last().copy(alpha = 0.12f)
+                        Modifier.drawWithContent {
+                            drawRect(brush = gradientBrush)
+                            val patternType = index % 5
+                            when (patternType) {
+                                0 -> { // Diagonal lines
+                                    val lineSpacing = 80f
+                                    var y = -200f
+                                    while (y < size.height + 400f) {
+                                        drawLine(color = patternColor, start = Offset(-200f, y), end = Offset(size.width + 200f, y - 200f), strokeWidth = 1.dp.toPx())
+                                        y += lineSpacing
                                     }
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            TextField(
-                                value = shayariText,
-                                onValueChange = { shayariText = it },
+                                }
+                                1 -> { // Dots grid
+                                    val dotSpacing = 60f
+                                    for (x in 0..(size.width / dotSpacing).toInt()) {
+                                        for (y in 0..(size.height / dotSpacing).toInt()) {
+                                            drawCircle(color = patternColor, radius = 2.dp.toPx(), center = Offset(x * dotSpacing, y * dotSpacing))
+                                        }
+                                    }
+                                }
+                                2 -> { // Horizontal lines
+                                    val lineSpacing = 60f
+                                    var y = 0f
+                                    while (y < size.height) {
+                                        drawLine(color = patternColor, start = Offset(0f, y), end = Offset(size.width, y), strokeWidth = 1.dp.toPx())
+                                        y += lineSpacing
+                                    }
+                                }
+                                3 -> { // Vertical lines
+                                    val lineSpacing = 60f
+                                    var x = 0f
+                                    while (x < size.width) {
+                                        drawLine(color = patternColor, start = Offset(x, 0f), end = Offset(x, size.height), strokeWidth = 1.dp.toPx())
+                                        x += lineSpacing
+                                    }
+                                }
+                                4 -> { // Crosshatch
+                                    val lineSpacing = 100f
+                                    var i = -size.width
+                                    while (i < size.width + size.height) {
+                                        drawLine(color = patternColor, start = Offset(i, 0f), end = Offset(i + size.height, size.height), strokeWidth = 0.5.dp.toPx())
+                                        drawLine(color = patternColor, start = Offset(i, size.height), end = Offset(i + size.height, 0f), strokeWidth = 0.5.dp.toPx())
+                                        i += lineSpacing
+                                    }
+                                }
+                            }
+                            drawContent()
+                        }
+                    } else Modifier
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.85f),
+                        shape = RoundedCornerShape(28.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize().then(abstractModifier)) {
+                            selectedImage?.let {
+                                AsyncImage(
+                                    model = it,
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+
+                            Box(
                                 modifier = Modifier
-                                    .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                                    .padding(24.dp),
-                                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                    color = textColor,
-                                    fontSize = fontSize.sp,
-                                    fontFamily = fontFamily,
-                                    textAlign = TextAlign.Center,
-                                    lineHeight = (fontSize * 1.3).sp
-                                ),
-                                placeholder = { 
-                                    Text(
-                                        "Type your quote here...", 
-                                        color = textColor.copy(alpha = 0.5f), 
-                                        fontSize = fontSize.sp, 
+                                    .fillMaxSize()
+                                    .pointerInput(Unit) {
+                                        detectDragGestures { change, dragAmount ->
+                                            change.consume()
+                                            offsetX += dragAmount.x
+                                            offsetY += dragAmount.y
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                TextField(
+                                    value = shayariText,
+                                    onValueChange = { shayariText = it },
+                                    modifier = Modifier
+                                        .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                                        .padding(24.dp),
+                                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                        color = textColor,
+                                        fontSize = fontSize.sp,
                                         fontFamily = fontFamily,
                                         textAlign = TextAlign.Center,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) 
-                                },
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    disabledContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
+                                        lineHeight = (fontSize * 1.3).sp
+                                    ),
+                                    placeholder = {
+                                        Text(
+                                            "Type your quote here...",
+                                            color = textColor.copy(alpha = 0.5f),
+                                            fontSize = fontSize.sp,
+                                            fontFamily = fontFamily,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    },
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = Color.Transparent,
+                                        unfocusedContainerColor = Color.Transparent,
+                                        disabledContainerColor = Color.Transparent,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -325,7 +349,7 @@ fun CreateScreen() {
             ) {
                 EditorActionBar(
                     viewModel = viewModel,
-                    onImageSelected = { 
+                    onImageSelected = {
                         selectedImage = it
                         selectedAbstractIndex = null
                     },
@@ -347,7 +371,7 @@ fun CreateScreen() {
 @Composable
 fun EditorActionBar(
     viewModel: ExploreViewModel,
-    onImageSelected: (Int) -> Unit,
+    onImageSelected: (Any) -> Unit,
     onAbstractSelected: (Int) -> Unit,
     onShayariSelected: (ShayariEntity) -> Unit,
     onColorSelected: (Color) -> Unit,
@@ -357,6 +381,13 @@ fun EditorActionBar(
 ) {
     var mainTab by remember { mutableStateOf(0) } // 0 for Background, 1 for Text
     var textSubTab by remember { mutableStateOf(0) } // 0 for Library, 1 for Style
+
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            uri?.let { onImageSelected(it) }
+        }
+    )
 
     val context = LocalContext.current
     val imageResources = remember {
@@ -369,11 +400,11 @@ fun EditorActionBar(
 
     val textColors = listOf(
         Color.White, Color.Black, Color(0xFFC6A75E), // Luxury Gold
-        Color(0xFFF44336), Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF673AB7), 
-        Color(0xFF3F51B5), Color(0xFF2196F3), Color(0xFF03A9F4), Color(0xFF00BCD4), 
-        Color(0xFF009688), Color(0xFF4CAF50), Color(0xFF8BC34A), Color(0xFFCDDC39), 
-        Color(0xFFFFEB3B), Color(0xFFFFC107), Color(0xFFFF9800), Color(0xFFFF5722), 
-        Color(0xFF795548), Color(0xFF9E9E9E), Color(0xFF607D8B), 
+        Color(0xFFF44336), Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF673AB7),
+        Color(0xFF3F51B5), Color(0xFF2196F3), Color(0xFF03A9F4), Color(0xFF00BCD4),
+        Color(0xFF009688), Color(0xFF4CAF50), Color(0xFF8BC34A), Color(0xFFCDDC39),
+        Color(0xFFFFEB3B), Color(0xFFFFC107), Color(0xFFFF9800), Color(0xFFFF5722),
+        Color(0xFF795548), Color(0xFF9E9E9E), Color(0xFF607D8B),
         Color(0xFFFFD700), Color(0xFFC0C0C0), Color(0xFFCD7F32),
         Color(0xFFE0F7FA), Color(0xFFF1F8E9), Color(0xFFFFF3E0),
         Color(0xFF263238), Color(0xFF3E2723), Color(0xFF1B5E20)
@@ -429,15 +460,21 @@ fun EditorActionBar(
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState())
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        UploadImageButton {
+                            singlePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
                         imageResources.forEach {
                             if (it != 0) {
                                 BackgroundThumbnail(it) { onImageSelected(it) }
                             }
                         }
                     }
-                    
+
                     SectionHeader("Abstract Textures")
                     Row(
                         modifier = Modifier
@@ -531,7 +568,7 @@ fun EditorActionBar(
                                     }
                                 }
                             }
-                            
+
                             StyleSection(title = "Size") {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Rounded.FormatSize, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
@@ -541,10 +578,10 @@ fun EditorActionBar(
                                         valueRange = 14f..42f,
                                         modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
                                     )
-                                    Text("${fontSize.toInt()}pt", style = MaterialTheme.typography.labelSmall)
+                                    Text("\${fontSize.toInt()}pt", style = MaterialTheme.typography.labelSmall)
                                 }
                             }
-                            
+
                             StyleSection(title = "Typeface") {
                                 Row(
                                     modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -655,5 +692,34 @@ fun FontChip(name: String, onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             style = MaterialTheme.typography.labelMedium
         )
+    }
+}
+
+@Composable
+fun UploadImageButton(onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.size(72.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                Icons.Rounded.AddPhotoAlternate,
+                contentDescription = "Upload from Gallery",
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Gallery",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }
