@@ -96,6 +96,7 @@ import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
 import com.dailyshayari.ui.theme.PoppinsFontFamily
 import dev.shreyaspatil.capturable.Capturable
+import dev.shreyaspatil.capturable.controller.CaptureController
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -153,6 +154,10 @@ private val colorPalettes = listOf(
     listOf(Color(0xFFFF5722), Color(0xFFFF8A65))
 )
 
+enum class CaptureAction {
+    SHARE, DOWNLOAD
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateScreen() {
@@ -168,6 +173,7 @@ fun CreateScreen() {
     val captureController = rememberCaptureController()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    var captureAction by remember { mutableStateOf<CaptureAction?>(null) }
 
     Scaffold(
         topBar = {
@@ -186,10 +192,16 @@ fun CreateScreen() {
                     }) {
                         Icon(Icons.Rounded.Refresh, contentDescription = "Reset", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = { coroutineScope.launch { captureController.capture() } }) {
+                    IconButton(onClick = {
+                        captureAction = CaptureAction.SHARE
+                        coroutineScope.launch { captureController.capture() }
+                    }) {
                         Icon(Icons.Rounded.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = { /* TODO: Download action */ }) {
+                    IconButton(onClick = {
+                        captureAction = CaptureAction.DOWNLOAD
+                        coroutineScope.launch { captureController.capture() }
+                    }) {
                         Icon(Icons.Rounded.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
@@ -216,7 +228,13 @@ fun CreateScreen() {
                 Capturable(
                     controller = captureController,
                     onCaptured = { bitmap, _ ->
-                        bitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
+                        bitmap?.let {
+                            when (captureAction) {
+                                CaptureAction.SHARE -> shareBitmap(context, it.asAndroidBitmap())
+                                CaptureAction.DOWNLOAD -> saveBitmapToGallery(context, it.asAndroidBitmap())
+                                null -> {}
+                            }
+                        }
                     }
                 ) {
                     val abstractModifier = if (selectedAbstractIndex != null) {
@@ -407,7 +425,7 @@ fun EditorActionBar(
         Color(0xFF795548), Color(0xFF9E9E9E), Color(0xFF607D8B),
         Color(0xFFFFD700), Color(0xFFC0C0C0), Color(0xFFCD7F32),
         Color(0xFFE0F7FA), Color(0xFFF1F8E9), Color(0xFFFFF3E0),
-        Color(0xFF263238), Color(0xFF3E2723), Color(0xFF1B5E20)
+        Color(0xFF263238), Color.Companion.Black
     )
 
     val fontFamilies = listOf(
