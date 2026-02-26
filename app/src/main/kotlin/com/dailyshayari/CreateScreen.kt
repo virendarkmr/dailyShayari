@@ -159,16 +159,16 @@ enum class CaptureAction {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateScreen() {
-    var shayariText by remember { mutableStateOf("Dream big, work hard, stay consistent.") }
-    var textColor by remember { mutableStateOf(Color.White) }
-    var fontSize by remember { mutableStateOf(24f) }
-    var fontFamily by remember { mutableStateOf<FontFamily>(FontFamily.Default) }
-    var selectedImage by remember { mutableStateOf<Any?>(null) }
-    var selectedAbstractIndex by remember { mutableStateOf<Int?>(0) }
-    val viewModel: ExploreViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
+fun CreateScreen(createViewModel: CreateViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))) {
+    val shayariText by createViewModel.shayariText.collectAsState()
+    val textColor by createViewModel.textColor.collectAsState()
+    val fontSize by createViewModel.fontSize.collectAsState()
+    val fontFamily by createViewModel.fontFamily.collectAsState()
+    val selectedImage by createViewModel.selectedImage.collectAsState()
+    val selectedAbstractIndex by createViewModel.selectedAbstractIndex.collectAsState()
+    val offsetX by createViewModel.offsetX.collectAsState()
+    val offsetY by createViewModel.offsetY.collectAsState()
+
     val captureController = rememberCaptureController()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -185,16 +185,7 @@ fun CreateScreen() {
                     )
                 },
                 actions = {
-                    IconButton(onClick = {
-                        shayariText = "Dream big, work hard, stay consistent."
-                        textColor = Color.White
-                        fontSize = 24f
-                        fontFamily = FontFamily.Default
-                        selectedImage = null
-                        selectedAbstractIndex = 0
-                        offsetX = 0f
-                        offsetY = 0f
-                    }) {
+                    IconButton(onClick = { createViewModel.resetState() }) {
                         Icon(Icons.Rounded.Refresh, contentDescription = "Reset", tint = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = {
@@ -310,7 +301,7 @@ fun CreateScreen() {
                                     model = it,
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
+                                    contentScale = ContentScale.Fit
                                 )
                             }
 
@@ -320,15 +311,14 @@ fun CreateScreen() {
                                     .pointerInput(Unit) {
                                         detectDragGestures { change, dragAmount ->
                                             change.consume()
-                                            offsetX += dragAmount.x
-                                            offsetY += dragAmount.y
+                                            createViewModel.onOffsetChange(dragAmount.x, dragAmount.y)
                                         }
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
                                 TextField(
                                     value = shayariText,
-                                    onValueChange = { shayariText = it },
+                                    onValueChange = { createViewModel.onShayariTextChange(it) },
                                     modifier = Modifier
                                         .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
                                         .padding(24.dp),
@@ -371,20 +361,13 @@ fun CreateScreen() {
                 tonalElevation = 8.dp
             ) {
                 EditorActionBar(
-                    viewModel = viewModel,
-                    onImageSelected = {
-                        selectedImage = it
-                        selectedAbstractIndex = null
-                    },
-                    onAbstractSelected = {
-                        selectedAbstractIndex = it
-                        selectedImage = null
-                    },
-                    onShayariSelected = { shayariText = it.text },
-                    onColorSelected = { textColor = it },
+                    onImageSelected = { createViewModel.onImageSelected(it) },
+                    onAbstractSelected = { createViewModel.onAbstractSelected(it) },
+                    onShayariSelected = { createViewModel.onShayariTextChange(it.text) },
+                    onColorSelected = { createViewModel.onTextColorChange(it) },
                     fontSize = fontSize,
-                    onFontSizeChanged = { fontSize = it },
-                    onFontFamilySelected = { fontFamily = it }
+                    onFontSizeChanged = { createViewModel.onFontSizeChange(it) },
+                    onFontFamilySelected = { createViewModel.onFontFamilyChange(it) }
                 )
             }
         }
@@ -393,7 +376,6 @@ fun CreateScreen() {
 
 @Composable
 fun EditorActionBar(
-    viewModel: ExploreViewModel,
     onImageSelected: (Any) -> Unit,
     onAbstractSelected: (Int) -> Unit,
     onShayariSelected: (ShayariEntity) -> Unit,
@@ -404,6 +386,7 @@ fun EditorActionBar(
 ) {
     var mainTab by remember { mutableStateOf(0) } // 0 for Background, 1 for Text
     var textSubTab by remember { mutableStateOf(0) } // 0 for Library, 1 for Style
+    val viewModel: ExploreViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))
 
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -601,7 +584,7 @@ fun EditorActionBar(
                                         valueRange = 14f..42f,
                                         modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
                                     )
-                                    Text("\${fontSize.toInt()}pt", style = MaterialTheme.typography.labelSmall)
+                                    Text("${fontSize.toInt()}pt", style = MaterialTheme.typography.labelSmall)
                                 }
                             }
 

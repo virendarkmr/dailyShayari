@@ -18,6 +18,9 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
             val shayariRepository = ShayariRepository(shayariDao, userPreferencesRepository, context)
             return ExploreViewModel(shayariRepository) as T
         }
+        if (modelClass.isAssignableFrom(CreateViewModel::class.java)) {
+            return CreateViewModel() as T
+        }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
