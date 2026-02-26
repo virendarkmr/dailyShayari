@@ -78,7 +78,7 @@ import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
+fun HomeScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(context, FirebaseModule.provideFirestore())
@@ -133,7 +133,10 @@ fun HomeScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
                 style = MaterialTheme.typography.headlineMedium,
                 color = luxuryText.appTitle
             )
-            CategoryGrid()
+            CategoryGrid(onCategoryClick = { category ->
+                // Navigate to Explore screen (index 1) with category filter
+                onNavigate(1, category)
+            })
         }
     }
 }
@@ -442,20 +445,22 @@ fun ShayariCard(title: String, subtitle: String) {
 data class CategoryInfo(val name: String, val icon: ImageVector)
 
 @Composable
-fun CategoryGrid() {
+fun CategoryGrid(onCategoryClick: (String) -> Unit = {}) {
     val categories = listOf(
         CategoryInfo("Love", Icons.Rounded.Favorite),
         CategoryInfo("Sad", Icons.Rounded.SentimentDissatisfied),
         CategoryInfo("Motivation", Icons.Rounded.Bolt),
         CategoryInfo("Friendship", Icons.Rounded.Group),
-        CategoryInfo("Gita Lines", Icons.AutoMirrored.Filled.MenuBook),
+        CategoryInfo("Gita", Icons.AutoMirrored.Filled.MenuBook),
         CategoryInfo("Quotes", Icons.Rounded.FormatQuote)
     )
     Column(verticalArrangement = Arrangement.spacedBy(GridSpacing)) {
         categories.chunked(2).forEach { rowItems ->
             Row(horizontalArrangement = Arrangement.spacedBy(GridSpacing)) {
                 rowItems.forEach { categoryInfo ->
-                    Box(modifier = Modifier.weight(1f)) { CategoryCard(categoryInfo) }
+                    Box(modifier = Modifier.weight(1f)) {
+                        CategoryCard(categoryInfo, onCategoryClick)
+                    }
                 }
                 if (rowItems.size < 2) { Spacer(Modifier.weight(1f)) }
             }
@@ -464,7 +469,7 @@ fun CategoryGrid() {
 }
 
 @Composable
-fun CategoryCard(categoryInfo: CategoryInfo) {
+fun CategoryCard(categoryInfo: CategoryInfo, onCategoryClick: (String) -> Unit = {}) {
     val luxuryText = LocalLuxuryTextColors.current
 
     val cardSurfaceGradient = Brush.verticalGradient(colors = listOf(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), Color.Black))
@@ -481,6 +486,7 @@ fun CategoryCard(categoryInfo: CategoryInfo) {
                 brush = Brush.verticalGradient(colors = listOf(GoldPrimary.copy(alpha = 0.2f), GoldPrimary.copy(alpha = 0.05f))),
                 shape = RoundedCornerShape(28.dp)
             )
+            .clickable { onCategoryClick(categoryInfo.name) }
     ) {
         Column(
             modifier = Modifier
@@ -516,5 +522,5 @@ fun CategoryCard(categoryInfo: CategoryInfo) {
 @Composable
 fun DefaultPreview() {
     val pagerState = rememberPagerState(pageCount= {1})
-    ShayariTheme { HomeScreen(pagerState = pagerState, onNavigate = {}) }
+    ShayariTheme { HomeScreen(pagerState = pagerState, onNavigate = { _, _ -> }) }
 }

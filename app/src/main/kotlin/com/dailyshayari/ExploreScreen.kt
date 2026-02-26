@@ -95,11 +95,18 @@ val luxuryGold = Color(0xFFC6A75E)
 val softWhite = Color(0xFFF5F5F5)
 
 @Composable
-fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
+fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, initialCategory: String? = null) {
     val context = LocalContext.current
     val viewModel: ExploreViewModel = viewModel(factory = ViewModelFactory(context))
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val shayaris = viewModel.shayaris.collectAsLazyPagingItems()
+
+    // Apply initial category filter if provided
+    LaunchedEffect(initialCategory) {
+        if (initialCategory != null) {
+            viewModel.selectCategory(initialCategory)
+        }
+    }
 
     val scrollState = rememberLazyListState()
     val previousVisibleItemIndex = remember(scrollState) { mutableStateOf(scrollState.firstVisibleItemIndex) }
@@ -189,7 +196,7 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int) -> Unit) {
 
 @Composable
 fun CategoryChips(selectedCategory: String?, onCategorySelected: (String) -> Unit) {
-    val categories = listOf("All", "Love", "Sad", "Motivation", "Friendship", "Gita Lines", "Quotes")
+    val categories = listOf("All", "Love", "Sad", "Motivation", "Friendship", "Gita", "Quotes")
     LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         items(categories) { category ->
             val isSelected = category.equals(selectedCategory, ignoreCase = true)
@@ -393,3 +400,4 @@ fun ActionRow(shayari: ShayariEntity, onShareClick: () -> Unit, modifier: Modifi
         }
     }
 }
+
