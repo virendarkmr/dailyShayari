@@ -96,7 +96,6 @@ import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
 import com.dailyshayari.ui.theme.PoppinsFontFamily
 import dev.shreyaspatil.capturable.Capturable
-import dev.shreyaspatil.capturable.controller.CaptureController
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -187,6 +186,12 @@ fun CreateScreen() {
                 },
                 actions = {
                     IconButton(onClick = {
+                        shayariText = "Dream big, work hard, stay consistent."
+                        textColor = Color.White
+                        fontSize = 24f
+                        fontFamily = FontFamily.Default
+                        selectedImage = null
+                        selectedAbstractIndex = 0
                         offsetX = 0f
                         offsetY = 0f
                     }) {
