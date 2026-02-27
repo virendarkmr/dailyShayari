@@ -1,17 +1,14 @@
 package com.dailyshayari
 
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,15 +31,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.FormatColorText
 import androidx.compose.material.icons.rounded.FormatSize
 import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,7 +47,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -62,6 +58,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -91,6 +88,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
+import com.dailyshayari.R
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.components.CategoryChips
 import com.dailyshayari.ui.explore.ExploreViewModel
@@ -161,7 +159,10 @@ enum class CaptureAction {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateScreen(createViewModel: CreateViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))) {
+fun CreateScreen(
+    onBackClick: () -> Unit = {},
+    createViewModel: CreateViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))
+) {
     val shayariText by createViewModel.shayariText.collectAsState()
     val textColor by createViewModel.textColor.collectAsState()
     val fontSize by createViewModel.fontSize.collectAsState()
@@ -176,9 +177,24 @@ fun CreateScreen(createViewModel: CreateViewModel = viewModel(factory = ViewMode
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     var captureAction by remember { mutableStateOf<CaptureAction?>(null) }
-    var isActionBarExpanded by remember { mutableStateOf(true) }
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 
-    Scaffold(
+    BottomSheetScaffold(
+        scaffoldState = bottomSheetScaffoldState,
+        sheetContent = {
+            EditorActionBar(
+                onImageSelected = { createViewModel.onImageSelected(it) },
+                onAbstractSelected = { createViewModel.onAbstractSelected(it) },
+                onShayariSelected = { createViewModel.onShayariTextChange(it.text) },
+                onColorSelected = { createViewModel.onTextColorChange(it) },
+                fontSize = fontSize,
+                onFontSizeChanged = { createViewModel.onFontSizeChange(it) },
+                onFontFamilySelected = { createViewModel.onFontFamilyChange(it) }
+            )
+        },
+        sheetPeekHeight = 100.dp,
+        sheetShape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+        sheetContainerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
                 title = {
@@ -187,6 +203,15 @@ fun CreateScreen(createViewModel: CreateViewModel = viewModel(factory = ViewMode
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 },
                 actions = {
                     IconButton(onClick = { createViewModel.resetState() }) {
@@ -290,9 +315,7 @@ fun CreateScreen(createViewModel: CreateViewModel = viewModel(factory = ViewMode
                             }
                             drawContent()
                         }
-                    } else {
-                        Modifier
-                    }
+                    } else Modifier
 
                     Card(
                         modifier = Modifier
@@ -342,7 +365,7 @@ fun CreateScreen(createViewModel: CreateViewModel = viewModel(factory = ViewMode
                                     ),
                                     placeholder = {
                                         Text(
-                                            "Please click here to write your own creation.",
+                                            "Type your quote here...",
                                             color = textColor.copy(alpha = 0.5f),
                                             fontSize = fontSize.sp,
                                             fontFamily = fontFamily,
@@ -363,27 +386,12 @@ fun CreateScreen(createViewModel: CreateViewModel = viewModel(factory = ViewMode
                     }
                 }
             }
-
-            // Editor Action Bar
-            EditorActionBar(
-                isExpanded = isActionBarExpanded,
-                onToggleExpand = { isActionBarExpanded = !isActionBarExpanded },
-                onImageSelected = { createViewModel.onImageSelected(it) },
-                onAbstractSelected = { createViewModel.onAbstractSelected(it) },
-                onShayariSelected = { createViewModel.onShayariTextChange(it.text) },
-                onColorSelected = { createViewModel.onTextColorChange(it) },
-                fontSize = fontSize,
-                onFontSizeChanged = { createViewModel.onFontSizeChange(it) },
-                onFontFamilySelected = { createViewModel.onFontFamilyChange(it) }
-            )
         }
     }
 }
 
 @Composable
 fun EditorActionBar(
-    isExpanded: Boolean,
-    onToggleExpand: () -> Unit,
     onImageSelected: (Any) -> Unit,
     onAbstractSelected: (Int) -> Unit,
     onShayariSelected: (ShayariEntity) -> Unit,
@@ -421,7 +429,7 @@ fun EditorActionBar(
         Color(0xFF795548), Color(0xFF9E9E9E), Color(0xFF607D8B),
         Color(0xFFFFD700), Color(0xFFC0C0C0), Color(0xFFCD7F32),
         Color(0xFFE0F7FA), Color(0xFFF1F8E9), Color(0xFFFFF3E0),
-        Color(0xFF263238), Color.Black
+        Color(0xFF263238), Color.Companion.Black
     )
 
     val fontFamilies = listOf(
@@ -437,221 +445,172 @@ fun EditorActionBar(
     Column(
         modifier = Modifier
             .navigationBarsPadding()
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
+            .padding(top = 8.dp)
     ) {
-        // Collapse/Expand Header with Drag Detection
-        Surface(
+        // Main Tabs
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onToggleExpand)
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures { change, dragAmount ->
-                        change.consume()
-                        // Swipe up (negative dragAmount) to collapse if expanded
-                        // Swipe down (positive dragAmount) to expand if collapsed
-                        if (dragAmount < -50 && isExpanded) {
-                            onToggleExpand()
-                        } else if (dragAmount > 50 && !isExpanded) {
-                            onToggleExpand()
-                        }
-                    }
-                },
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                .padding(horizontal = 24.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (isExpanded) "Editing Tools" else "Tap to expand",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Icon(
-                    imageVector = if (isExpanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowUp,
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+            MainTabItem(
+                selected = mainTab == 0,
+                icon = Icons.Rounded.Image,
+                label = "Background",
+                modifier = Modifier.weight(1f),
+                onClick = { mainTab = 0 }
+            )
+            MainTabItem(
+                selected = mainTab == 1,
+                icon = Icons.Rounded.FormatColorText,
+                label = "Typography",
+                modifier = Modifier.weight(1f),
+                onClick = { mainTab = 1 }
+            )
         }
 
-        // Expandable Content
-        if (isExpanded) {
-            Column(modifier = Modifier.padding(top = 8.dp)) {
-                // Main Tabs
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    MainTabItem(
-                        selected = mainTab == 0,
-                        icon = Icons.Rounded.Image,
-                        label = "Background",
-                        modifier = Modifier.weight(1f),
-                        onClick = { mainTab = 0 }
-                    )
-                    MainTabItem(
-                        selected = mainTab == 1,
-                        icon = Icons.Rounded.FormatColorText,
-                        label = "Typography",
-                        modifier = Modifier.weight(1f),
-                        onClick = { mainTab = 1 }
-                    )
-                }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-
-                Box(modifier = Modifier.height(280.dp)) {
-                    if (mainTab == 0) {
-                        // Background Selection
-                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            SectionHeader("Images")
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState())
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                UploadImageButton {
-                                    singlePhotoPickerLauncher.launch(
-                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                    )
-                                }
-                                imageResources.forEach {
-                                    if (it != 0) {
-                                        BackgroundThumbnail(it) { onImageSelected(it) }
-                                    }
-                                }
+        Box(modifier = Modifier.height(280.dp)) {
+            if (mainTab == 0) {
+                // Background Selection
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    SectionHeader("Images")
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        UploadImageButton {
+                            singlePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                        imageResources.forEach {
+                            if (it != 0) {
+                                BackgroundThumbnail(it) { onImageSelected(it) }
                             }
+                        }
+                    }
 
-                            SectionHeader("Abstract Textures")
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState())
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    SectionHeader("Abstract Textures")
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        colorPalettes.forEachIndexed { index, palette ->
+                            AbstractThumbnail(palette) { onAbstractSelected(index) }
+                        }
+                    }
+                }
+            } else {
+                // Text Editing
+                Column {
+                    TabRow(
+                        selectedTabIndex = textSubTab,
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        indicator = { tabPositions ->
+                            TabRowDefaults.SecondaryIndicator(
+                                Modifier.tabIndicatorOffset(tabPositions[textSubTab]),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        divider = {}
+                    ) {
+                        Tab(
+                            selected = textSubTab == 0,
+                            onClick = { textSubTab = 0 },
+                            text = { Text("Library", style = MaterialTheme.typography.labelLarge) }
+                        )
+                        Tab(
+                            selected = textSubTab == 1,
+                            onClick = { textSubTab = 1 },
+                            text = { Text("Style", style = MaterialTheme.typography.labelLarge) }
+                        )
+                    }
+
+                    if (textSubTab == 0) {
+                        Column {
+                            CategoryChips(
+                                selectedCategory = selectedCategory,
+                                onCategorySelected = { category -> viewModel.selectCategory(category) }
+                            )
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                colorPalettes.forEachIndexed { index, palette ->
-                                    AbstractThumbnail(palette) { onAbstractSelected(index) }
+                                items(count = shayaris.itemCount) { index ->
+                                    val shayari = shayaris[index]
+                                    shayari?.let { safeShayari ->
+                                        Surface(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { onShayariSelected(safeShayari) },
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = Color.Transparent
+                                        ) {
+                                            Text(
+                                                text = safeShayari.text,
+                                                modifier = Modifier.padding(12.dp),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                maxLines = 2,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                                            )
+                                        }
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                                    }
                                 }
                             }
                         }
                     } else {
-                        // Text Editing
-                        Column {
-                            TabRow(
-                                selectedTabIndex = textSubTab,
-                                containerColor = Color.Transparent,
-                                contentColor = MaterialTheme.colorScheme.primary,
-                                indicator = { tabPositions ->
-                                    TabRowDefaults.SecondaryIndicator(
-                                        Modifier.tabIndicatorOffset(tabPositions[textSubTab]),
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                },
-                                divider = {}
-                            ) {
-                                Tab(
-                                    selected = textSubTab == 0,
-                                    onClick = { textSubTab = 0 },
-                                    text = { Text("Library", style = MaterialTheme.typography.labelLarge) }
-                                )
-                                Tab(
-                                    selected = textSubTab == 1,
-                                    onClick = { textSubTab = 1 },
-                                    text = { Text("Style", style = MaterialTheme.typography.labelLarge) }
-                                )
-                            }
-
-                            if (textSubTab == 0) {
-                                Column {
-                                    CategoryChips(
-                                        selectedCategory = selectedCategory,
-                                        onCategorySelected = { category -> viewModel.selectCategory(category) }
-                                    )
-                                    LazyColumn(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        items(count = shayaris.itemCount) { index ->
-                                            val shayari = shayaris[index]
-                                            shayari?.let { safeShayari ->
-                                                Surface(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .clickable { onShayariSelected(safeShayari) },
-                                                    shape = RoundedCornerShape(12.dp),
-                                                    color = Color.Transparent
-                                                ) {
-                                                    Text(
-                                                        text = safeShayari.text,
-                                                        modifier = Modifier.padding(12.dp),
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        maxLines = 2,
-                                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                                                    )
-                                                }
-                                                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                                            }
-                                        }
+                        // Style Sub-Tab
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp)
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                        ) {
+                            StyleSection(title = "Color") {
+                                Row(
+                                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    textColors.forEach { color ->
+                                        ColorCircle(color) { onColorSelected(color) }
                                     }
                                 }
-                            } else {
-                                // Style Sub-Tab
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(16.dp)
-                                        .verticalScroll(rememberScrollState()),
-                                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                            }
+
+                            StyleSection(title = "Size") {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Rounded.FormatSize, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                                    Slider(
+                                        value = fontSize,
+                                        onValueChange = onFontSizeChanged,
+                                        valueRange = 14f..42f,
+                                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                                    )
+                                    Text("${fontSize.toInt()}pt", style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+
+                            StyleSection(title = "Typeface") {
+                                Row(
+                                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    StyleSection(title = "Color") {
-                                        Row(
-                                            modifier = Modifier.horizontalScroll(rememberScrollState()),
-                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                        ) {
-                                            textColors.forEach { color ->
-                                                ColorCircle(color) { onColorSelected(color) }
-                                            }
-                                        }
-                                    }
-
-                                    StyleSection(title = "Size") {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Rounded.FormatSize, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
-                                            Slider(
-                                                value = fontSize,
-                                                onValueChange = onFontSizeChanged,
-                                                valueRange = 14f..42f,
-                                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
-                                            )
-                                            Text("${fontSize.toInt()}pt", style = MaterialTheme.typography.labelSmall)
-                                        }
-                                    }
-
-                                    StyleSection(title = "Typeface") {
-                                        Row(
-                                            modifier = Modifier.horizontalScroll(rememberScrollState()),
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            fontFamilies.forEach { (name, family) ->
-                                                FontChip(name) { onFontFamilySelected(family) }
-                                            }
-                                        }
+                                    fontFamilies.forEach { (name, family) ->
+                                        FontChip(name) { onFontFamilySelected(family) }
                                     }
                                 }
                             }

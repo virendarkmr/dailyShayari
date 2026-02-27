@@ -4,7 +4,9 @@
 package com.dailyshayari
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.dailyshayari.ui.theme.ShayariTheme
 import kotlinx.coroutines.launch
 
@@ -53,6 +56,11 @@ fun MainScreen() {
     val pagerState = rememberPagerState(pageCount = { screens.size })
     val coroutineScope = rememberCoroutineScope()
     val selectedCategory = remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+
+    // State for double back button press
+    var backPressedTime = remember { mutableStateOf(0L) }
+    val backPressInterval = 2000L // 2 seconds interval
 
     val onNavigate: (Int, String?) -> Unit = { pageIndex, category ->
         if (category != null) {
@@ -63,11 +71,30 @@ fun MainScreen() {
         }
     }
 
+    // Handle back button press
+    BackHandler {
+        if (pagerState.currentPage != 0) {
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(0)
+            }
+        } else {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - backPressedTime.value <= backPressInterval) {
+                // Second back press within 2 seconds - exit app
+                (context as? ComponentActivity)?.finish()
+            } else {
+                // First back press - show toast message
+                backPressedTime.value = currentTime
+                Toast.makeText(context, "Press back again to exit", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     HorizontalPager(state = pagerState) { page ->
         when (screens[page]) {
             is Screen.Home -> HomeScreen(pagerState, onNavigate)
             is Screen.Explore -> ExploreScreen(pagerState, onNavigate, initialCategory = selectedCategory.value)
-            is Screen.Create -> CreateScreen()
+            is Screen.Create -> CreateScreen(onBackClick = { onNavigate(0, null) })
         }
     }
 }
