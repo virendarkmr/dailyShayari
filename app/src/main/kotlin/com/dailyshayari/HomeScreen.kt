@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -53,7 +54,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -64,6 +64,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.dailyshayari.data.Shayari
 import com.dailyshayari.di.FirebaseModule
+import com.dailyshayari.ui.components.AppWatermark
 import com.dailyshayari.ui.theme.*
 import com.dailyshayari.util.copyTextToClipboard
 import com.dailyshayari.util.isHindi
@@ -300,6 +301,8 @@ fun TodaysSpecialContent(shayari: Shayari?, imageResId: Int) {
                 )
         )
 
+        AppWatermark(color = Color.White.copy(alpha = 0.6f))
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -449,7 +452,7 @@ fun ShayariCard(title: String, subtitle: String) {
                     Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = luxuryText.secondary)
                 }
             }
-            Icon(imageVector = Icons.Rounded.ArrowForward, contentDescription = "Arrow", tint = luxuryText.secondary)
+            Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = "Arrow", tint = luxuryText.secondary)
         }
     }
 }

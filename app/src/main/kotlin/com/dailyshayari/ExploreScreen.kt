@@ -1,3 +1,4 @@
+
 @file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 
 package com.dailyshayari
@@ -79,10 +80,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
-import androidx.paging.compose.itemContentType
 import coil.compose.AsyncImage
 import com.dailyshayari.db.ShayariEntity
+import com.dailyshayari.ui.components.AppWatermark
 import com.dailyshayari.ui.explore.ExploreViewModel
 import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
@@ -218,39 +218,33 @@ fun ShayariFeed(
     onRequestFullCapture: (ShayariEntity) -> Unit = {},
     viewModel: ExploreViewModel
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = scrollState,
-            contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            items(
-                count = shayaris.itemCount,
-                key = shayaris.itemKey { it.id },
-                contentType = shayaris.itemContentType { "shayari" }
-            ) { index ->
-                val shayari = shayaris[index]
-                if (shayari != null) {
-                    ShayariCard(shayari = shayari, onRequestFullCapture = onRequestFullCapture, viewModel = viewModel)
-                }
-            }
-            
-            if (shayaris.loadState.append is LoadState.Loading) {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = luxuryGold, modifier = Modifier.size(32.dp))
-                    }
-                }
-            }
-        }
-
+    // Handle loading state
+    if (shayaris.itemCount == 0) {
         if (shayaris.loadState.refresh is LoadState.Loading) {
-            CircularProgressIndicator(color = luxuryGold, modifier = Modifier.align(Alignment.Center))
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = luxuryGold)
+            }
+        } else if (shayaris.loadState.refresh is LoadState.NotLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No shayaris found.", color = softWhite)
+            }
         }
+        return
+    }
 
-        if (shayaris.loadState.refresh is LoadState.NotLoading && shayaris.itemCount == 0) {
-            Text("No shayaris found.", color = softWhite, modifier = Modifier.align(Alignment.Center))
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        state = scrollState,
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        // Use Int.MAX_VALUE to simulate infinite scroll loop as it was previously working for the user
+        items(Int.MAX_VALUE) { index ->
+            val actualIndex = index % shayaris.itemCount
+            val shayari = shayaris[actualIndex]
+            if (shayari != null) {
+                ShayariCard(shayari = shayari, onRequestFullCapture = onRequestFullCapture, viewModel = viewModel)
+            }
         }
     }
 }
@@ -301,7 +295,7 @@ fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) ->
 
         Column(modifier = Modifier.fillMaxWidth().shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp)).clip(RoundedCornerShape(24.dp))) {
             Capturable(controller = captureController, onCaptured = { imageBitmap, _ -> imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) } }) {
-                TextCardContent(shayari = shayari, modifier = cardModifier)
+                TextCardContent(shayari = shayari, palette = palette, modifier = cardModifier)
             }
             Column(modifier = Modifier.fillMaxWidth().then(cardModifier)) {
                 HorizontalDivider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
@@ -317,23 +311,26 @@ fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) ->
 }
 
 @Composable
-fun TextCardContent(shayari: ShayariEntity, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
-        Text(
-            text = shayari.category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
-            color = luxuryGold,
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        val isHindi = isHindi(shayari.text)
-        val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
-        val fontSize = if (isHindi) 20.sp else 18.sp
-        Text(
-            text = shayari.text,
-            color = softWhite,
-            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFamily, fontSize = fontSize),
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+fun TextCardContent(shayari: ShayariEntity, palette: List<Color>, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxWidth()) {
+        AppWatermark(backgroundColor = palette.first())
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = shayari.category.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                color = luxuryGold,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            val isHindi = isHindi(shayari.text)
+            val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
+            val fontSize = if (isHindi) 20.sp else 18.sp
+            Text(
+                text = shayari.text,
+                color = softWhite,
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFamily, fontSize = fontSize),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
     }
 }
 
@@ -370,6 +367,7 @@ fun ImageCardContent(shayari: ShayariEntity) {
             modifier = Modifier.fillMaxSize()
         )
         Box(modifier = Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)))))
+        AppWatermark(backgroundColor = Color.Black.copy(alpha = 0.8f)) 
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp).padding(bottom = 56.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

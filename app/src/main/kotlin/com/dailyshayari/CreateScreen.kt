@@ -90,6 +90,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.dailyshayari.R
 import com.dailyshayari.db.ShayariEntity
+import com.dailyshayari.ui.components.AppWatermark
 import com.dailyshayari.ui.components.CategoryChips
 import com.dailyshayari.ui.explore.ExploreViewModel
 import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
@@ -338,6 +339,8 @@ fun CreateScreen(
                                     }
                                 )
                             }
+
+                            AppWatermark(color = if (selectedImage != null) Color.White.copy(alpha = 0.6f) else textColor.copy(alpha = 0.4f))
 
                             Box(
                                 modifier = Modifier
