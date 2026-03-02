@@ -117,7 +117,7 @@ fun HomeScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit) {
                             animationSpec = tween(500, easing = FastOutSlowInEasing)
                         )
             ) {
-                TodaysSpecial(shayaris = todaysShayari)
+                TodaysSpecial(shayaris = todaysShayari, viewModel = viewModel)
             }
 
             Text(
@@ -167,7 +167,7 @@ private const val TODAYS_SPECIAL_CAPTURE_DELAY_MS = 400L
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TodaysSpecial(shayaris: List<Shayari>) {
+fun TodaysSpecial(shayaris: List<Shayari>, viewModel: HomeViewModel) {
     val context = LocalContext.current
     val images = remember {
         val allImageIds = (1..19).map { context.resources.getIdentifier("bg_$it", "drawable", context.packageName) }.filter { it != 0 }
@@ -210,9 +210,10 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                 ) {
                     // Box containing both image content and action row inside Capturable
                     Box(modifier = Modifier.fillMaxWidth()) {
+                        val imageResId = images.getOrElse(page % images.size) { R.drawable.bg_1 }
                         TodaysSpecialContent(
                             shayari = shayari,
-                            imageResId = images.getOrElse(page % images.size) { R.drawable.bg_1 }
+                            imageResId = imageResId
                         )
                         // ActionRow overlaid on top of image, transparent during capture
                         if (shayari != null) {
@@ -226,6 +227,11 @@ fun TodaysSpecial(shayaris: List<Shayari>) {
                                         captureController.capture()
                                     }
                                 },
+                                onFavoriteClick = {
+                                    val imageName = context.resources.getResourceEntryName(imageResId)
+                                    viewModel.toggleFavorite(shayari, imageName)
+                                },
+                                isFavoriteFlow = viewModel.isFavorite(shayari.id),
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .background(Color.Transparent)
@@ -334,9 +340,15 @@ fun TodaysSpecialContent(shayari: Shayari?, imageResId: Int) {
 }
 
 @Composable
-fun TodaysSpecialActionRow(shayari: Shayari, onShareClick: () -> Unit, modifier: Modifier = Modifier) {
+fun TodaysSpecialActionRow(
+    shayari: Shayari, 
+    onShareClick: () -> Unit, 
+    onFavoriteClick: () -> Unit,
+    isFavoriteFlow: kotlinx.coroutines.flow.Flow<Boolean>,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
-    var isLiked by remember { mutableStateOf(false) }
+    val isLiked by isFavoriteFlow.collectAsState(initial = false)
 
     Row(
         modifier = modifier
@@ -345,7 +357,7 @@ fun TodaysSpecialActionRow(shayari: Shayari, onShareClick: () -> Unit, modifier:
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { isLiked = !isLiked }) {
+        IconButton(onClick = onFavoriteClick) {
             Icon(
                 imageVector = if (isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
                 contentDescription = "Like",

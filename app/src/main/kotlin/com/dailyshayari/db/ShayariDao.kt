@@ -17,4 +17,10 @@ interface ShayariDao {
 
     @Query("SELECT * FROM shayaris WHERE category = :category ORDER BY createdAt DESC")
     fun getByCategoryPaging(category: String): PagingSource<Int, ShayariEntity>
+
+    @Query("SELECT COUNT(*) FROM shayaris")
+    suspend fun getCount(): Int
+
+    @Query("SELECT * FROM shayaris WHERE text LIKE '%' || :query || '%' AND (:category IS NULL OR category = :category) ORDER BY createdAt DESC")
+    suspend fun searchShayaris(query: String, category: String?): List<ShayariEntity>
 }

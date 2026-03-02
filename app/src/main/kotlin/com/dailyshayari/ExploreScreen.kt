@@ -1,4 +1,3 @@
-
 @file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 
 package com.dailyshayari
@@ -27,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -40,7 +40,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -79,6 +79,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
+import androidx.paging.compose.itemContentType
 import coil.compose.AsyncImage
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.explore.ExploreViewModel
@@ -89,12 +91,11 @@ import com.dailyshayari.util.isHindi
 import dev.shreyaspatil.capturable.Capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-// Offscreen capture delay (milliseconds). Increase on slow devices, decrease to reduce visible overlay time.
 private const val FULL_CAPTURE_DELAY_MS = 700L
-
 val luxuryGold = Color(0xFFC6A75E)
 val softWhite = Color(0xFFF5F5F5)
 
@@ -105,7 +106,6 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val shayaris = viewModel.shayaris.collectAsLazyPagingItems()
 
-    // Apply initial category filter if provided
     LaunchedEffect(initialCategory) {
         if (initialCategory != null) {
             viewModel.selectCategory(initialCategory)
@@ -122,14 +122,11 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
         }
     }
 
-    // Full-card capture controller & state: used to render a full card offscreen and capture it completely
     val fullCaptureController = rememberCaptureController()
     var captureTarget by remember { mutableStateOf<ShayariEntity?>(null) }
 
-    // When a capture target is set, trigger capture after a short delay so composition finishes
     LaunchedEffect(captureTarget) {
         if (captureTarget != null) {
-            // small delay to allow offscreen composable to measure and draw
             delay(FULL_CAPTURE_DELAY_MS)
             fullCaptureController.capture()
         }
@@ -155,29 +152,22 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
         },
         bottomBar = { AppBottomBar(pagerState = pagerState, onNavigate = onNavigate) }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             ShayariFeed(
-                modifier = Modifier.padding(innerPadding),
                 scrollState = scrollState,
                 shayaris = shayaris,
-                onRequestFullCapture = { sh ->
-                    // request rendering and capturing this shayari offscreen
-                    captureTarget = sh
-                }
+                onRequestFullCapture = { sh -> captureTarget = sh },
+                viewModel = viewModel
             )
 
-            // Offscreen/full-card Capturable overlay — only visible when captureTarget != null
             captureTarget?.let { target ->
-                // keep a full-screen container so the overlay centers the card, but only the card box is Capturable
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Capturable(
                         controller = fullCaptureController,
                         onCaptured = { imageBitmap, _ ->
                             imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
-                            // clear target to remove overlay once done
                             captureTarget = null
                         },
-                        // limit Capturable to card width (matches feed padding)
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp)
@@ -188,7 +178,6 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
                                 .clip(RoundedCornerShape(24.dp))
                                 .fillMaxWidth()
                         ) {
-                            // Render the card content without ActionRow so the shared image doesn't include icons
                             ImageCardContent(shayari = target)
                         }
                     }
@@ -226,35 +215,42 @@ fun ShayariFeed(
     modifier: Modifier = Modifier,
     scrollState: LazyListState,
     shayaris: LazyPagingItems<ShayariEntity>,
-    onRequestFullCapture: (ShayariEntity) -> Unit = {}
+    onRequestFullCapture: (ShayariEntity) -> Unit = {},
+    viewModel: ExploreViewModel
 ) {
-    if (shayaris.loadState.refresh is LoadState.Loading) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
-    if (shayaris.itemCount == 0 && shayaris.loadState.append.endOfPaginationReached) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No shayaris found.", color = softWhite)
-        }
-        return
-    }
-
-    LazyColumn(
-        modifier = modifier,
-        state = scrollState,
-        contentPadding = PaddingValues(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        items(Int.MAX_VALUE) { index ->
-            if (shayaris.itemCount > 0) {
-                val actualIndex = index % shayaris.itemCount
-                shayaris[actualIndex]?.let { shayari ->
-                    ShayariCard(shayari = shayari, onRequestFullCapture = onRequestFullCapture)
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = scrollState,
+            contentPadding = PaddingValues(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            items(
+                count = shayaris.itemCount,
+                key = shayaris.itemKey { it.id },
+                contentType = shayaris.itemContentType { "shayari" }
+            ) { index ->
+                val shayari = shayaris[index]
+                if (shayari != null) {
+                    ShayariCard(shayari = shayari, onRequestFullCapture = onRequestFullCapture, viewModel = viewModel)
                 }
             }
+            
+            if (shayaris.loadState.append is LoadState.Loading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = luxuryGold, modifier = Modifier.size(32.dp))
+                    }
+                }
+            }
+        }
+
+        if (shayaris.loadState.refresh is LoadState.Loading) {
+            CircularProgressIndicator(color = luxuryGold, modifier = Modifier.align(Alignment.Center))
+        }
+
+        if (shayaris.loadState.refresh is LoadState.NotLoading && shayaris.itemCount == 0) {
+            Text("No shayaris found.", color = softWhite, modifier = Modifier.align(Alignment.Center))
         }
     }
 }
@@ -268,7 +264,7 @@ private val colorPalettes = listOf(
 )
 
 @Composable
-fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) -> Unit = {}) {
+fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) -> Unit = {}, viewModel: ExploreViewModel) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val captureController = rememberCaptureController()
@@ -279,51 +275,42 @@ fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) ->
             Capturable(controller = captureController, onCaptured = { imageBitmap, _ ->
                 imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
             }, modifier = Modifier.fillMaxSize()) {
-
-                // Put both image and ActionRow inside Capturable so the ActionRow can be hidden (alpha=0) during capture
                 Box(modifier = Modifier.fillMaxSize()) {
+                    val imageResId = getImageResId(context, shayari)
                     ImageCardContent(shayari = shayari)
-
                     ActionRow(
                         shayari = shayari,
-                        onShareClick = {
-                            // Instead of capturing the on-screen composable (which may be partially off-screen),
-                            // request a full offscreen capture rendered by ExploreScreen's overlay.
-                            onRequestFullCapture(shayari)
+                        onShareClick = { onRequestFullCapture(shayari) },
+                        onFavoriteClick = {
+                            val imageName = if (imageResId != 0) context.resources.getResourceEntryName(imageResId) else "bg_1"
+                            viewModel.toggleFavorite(shayari, imageName)
                         },
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .background(Color.Transparent)
+                        isFavoriteFlow = viewModel.isFavorite(shayari.id),
+                        modifier = Modifier.align(Alignment.BottomCenter).background(Color.Transparent)
                     )
                 }
             }
         }
     } else {
-        // Text card: keep original look and ActionRow outside the Capturable (so it is included in the visual card)
         val palette = remember(shayari.id) { colorPalettes.random() }
-        val cardModifier = run {
-            val gradientBrush = remember(palette) { Brush.radialGradient(colors = palette, center = Offset.Zero, radius = 2000f) }
-            val patternColor = remember(palette) { palette.last().copy(alpha = 0.08f) }
-            Modifier.drawWithContent {
-                drawRect(brush = gradientBrush)
-                val lineSpacing = 80f
-                var y = -200f
-                while (y < size.height + 400f) {
-                    drawLine(color = patternColor, start = Offset(-200f, y), end = Offset(size.width + 200f, y - 200f), strokeWidth = 1.dp.toPx())
-                    y += lineSpacing
-                }
-                drawContent()
-            }
+        val cardModifier = Modifier.drawWithContent {
+            val gradientBrush = Brush.radialGradient(colors = palette, center = Offset.Zero, radius = 2000f)
+            drawRect(brush = gradientBrush)
+            drawContent()
         }
 
         Column(modifier = Modifier.fillMaxWidth().shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp)).clip(RoundedCornerShape(24.dp))) {
             Capturable(controller = captureController, onCaptured = { imageBitmap, _ -> imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) } }) {
                 TextCardContent(shayari = shayari, modifier = cardModifier)
             }
-
             Column(modifier = Modifier.fillMaxWidth().then(cardModifier)) {
-                Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
-                ActionRow(shayari = shayari, onShareClick = { coroutineScope.launch { captureController.capture() } })
+                HorizontalDivider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                ActionRow(
+                    shayari = shayari,
+                    onShareClick = { coroutineScope.launch { captureController.capture() } },
+                    onFavoriteClick = { viewModel.toggleFavorite(shayari, "none") },
+                    isFavoriteFlow = viewModel.isFavorite(shayari.id)
+                )
             }
         }
     }
@@ -340,7 +327,7 @@ fun TextCardContent(shayari: ShayariEntity, modifier: Modifier = Modifier) {
         )
         val isHindi = isHindi(shayari.text)
         val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
-        val fontSize = if (isHindi) (MaterialTheme.typography.bodyLarge.fontSize.value + 2).sp else MaterialTheme.typography.bodyLarge.fontSize
+        val fontSize = if (isHindi) 20.sp else 18.sp
         Text(
             text = shayari.text,
             color = softWhite,
@@ -350,7 +337,7 @@ fun TextCardContent(shayari: ShayariEntity, modifier: Modifier = Modifier) {
     }
 }
 
-object DrawableUtils {
+private object DrawableUtils {
     private var imageCount: Int? = null
     fun getBgImageCount(context: Context): Int {
         if (imageCount != null) return imageCount!!
@@ -363,63 +350,41 @@ object DrawableUtils {
     }
 }
 
+fun getImageResId(context: Context, shayari: ShayariEntity): Int {
+    val imageCount = DrawableUtils.getBgImageCount(context)
+    if (imageCount == 0) return 0
+    val imageIndex = (shayari.id.hashCode().absoluteValue % imageCount) + 1
+    return context.resources.getIdentifier("bg_$imageIndex", "drawable", context.packageName)
+}
+
 @Composable
 fun ImageCardContent(shayari: ShayariEntity) {
     val context = LocalContext.current
-    val imageCount = remember { DrawableUtils.getBgImageCount(context) }
+    val imageResId = getImageResId(context, shayari)
 
-    if (imageCount == 0) {
-        TextCardContent(shayari = shayari)
-        return
-    }
-
-    val imageResId = remember(shayari.id, shayari.category) {
-        val imageIndex = (shayari.id.hashCode().absoluteValue % imageCount) + 1
-        context.resources.getIdentifier("bg_$imageIndex", "drawable", context.packageName)
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(3f / 4f)
-    ) {
+    Box(modifier = Modifier.fillMaxWidth().aspectRatio(3f / 4f)) {
         AsyncImage(
-            model = imageResId,
+            model = if (imageResId != 0) imageResId else R.drawable.bg_1,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.8f)
-                        )
-                    )
-                )
-        )
+        Box(modifier = Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)))))
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .padding(bottom = 56.dp), // Add padding to avoid overlap with ActionRow
+            modifier = Modifier.fillMaxSize().padding(16.dp).padding(bottom = 56.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             val isHindi = isHindi(shayari.text)
             val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
             val fontSize = if (isHindi) 22.sp else 20.sp
-            val textShadow = Shadow(color = Color.Black.copy(alpha = 0.5f), offset = Offset(0f, 2f), blurRadius = 6f)
             Text(
                 text = shayari.text,
                 color = softWhite,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontSize = fontSize,
                     fontFamily = fontFamily,
-                    shadow = textShadow,
+                    shadow = Shadow(Color.Black.copy(alpha = 0.5f), Offset(0f, 2f), 6f),
                     textAlign = TextAlign.Center
                 ),
                 modifier = Modifier.fillMaxWidth()
@@ -429,22 +394,25 @@ fun ImageCardContent(shayari: ShayariEntity) {
 }
 
 @Composable
-fun ActionRow(shayari: ShayariEntity, onShareClick: () -> Unit, modifier: Modifier = Modifier) {
+fun ActionRow(
+    shayari: ShayariEntity,
+    onShareClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    isFavoriteFlow: Flow<Boolean>,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
-    var isLiked by remember { mutableStateOf(false) }
+    val isLiked by isFavoriteFlow.collectAsState(initial = false)
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.8f else 1f, animationSpec = tween(100))
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { isLiked = !isLiked }, interactionSource = interactionSource) {
+        IconButton(onClick = onFavoriteClick, interactionSource = interactionSource) {
             Icon(
                 imageVector = if (isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
                 contentDescription = "Like",

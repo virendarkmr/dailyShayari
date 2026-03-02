@@ -36,24 +36,32 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dailyshayari.ui.theme.GoldPrimary
 import com.dailyshayari.ui.theme.LocalLuxuryTextColors
 import com.dailyshayari.ui.theme.ScreenPadding
+import com.dailyshayari.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onNavigate: (Int, String?) -> Unit) {
+fun SettingsScreen(onNavigate: (Int, String?) -> Unit, onFavoritesClick: () -> Unit, onSearchClick: () -> Unit) {
     val luxuryText = LocalLuxuryTextColors.current
+    val context = LocalContext.current
+    val viewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(context))
+    val favoriteCount by viewModel.favoriteCount.collectAsState(initial = 0)
 
     Scaffold(
         topBar = {
@@ -120,8 +128,10 @@ fun SettingsScreen(onNavigate: (Int, String?) -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatCard(
-                    modifier = Modifier.weight(1f),
-                    count = "245",
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { onFavoritesClick() },
+                    count = favoriteCount.toString(),
                     label = "LIKED",
                     icon = Icons.Rounded.Favorite,
                     iconColor = Color(0xFFE91E63)
@@ -129,7 +139,7 @@ fun SettingsScreen(onNavigate: (Int, String?) -> Unit) {
                 StatCard(
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { onNavigate(1, null) },
+                        .clickable { onSearchClick() },
                     count = "Search",
                     label = "SHAYARI",
                     icon = Icons.Rounded.Search,

@@ -10,7 +10,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -24,9 +26,11 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.dailyshayari.ui.theme.ShayariTheme
@@ -37,6 +41,8 @@ sealed class Screen {
     object Explore : Screen()
     object Create : Screen()
     object Settings : Screen()
+    object Favorites : Screen()
+    object Search : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -57,6 +63,7 @@ fun MainScreen() {
     val coroutineScope = rememberCoroutineScope()
     val selectedCategory = remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
 
     // State for double back button press
     var backPressedTime = remember { mutableStateOf(0L) }
@@ -73,7 +80,9 @@ fun MainScreen() {
 
     // Handle back button press
     BackHandler {
-        if (pagerState.currentPage != 0) {
+        if (currentScreen is Screen.Favorites || currentScreen is Screen.Search) {
+            currentScreen = Screen.Settings
+        } else if (pagerState.currentPage != 0) {
             coroutineScope.launch {
                 pagerState.animateScrollToPage(0)
             }
@@ -90,12 +99,28 @@ fun MainScreen() {
         }
     }
 
-    HorizontalPager(state = pagerState) { page ->
-        when (screens[page]) {
-            is Screen.Home -> HomeScreen(pagerState, onNavigate)
-            is Screen.Explore -> ExploreScreen(pagerState, onNavigate, initialCategory = selectedCategory.value)
-            is Screen.Create -> CreateScreen(onBackClick = { onNavigate(0, null) })
-            is Screen.Settings -> SettingsScreen(onNavigate = onNavigate)
+    Box(modifier = Modifier.fillMaxSize()) {
+        HorizontalPager(state = pagerState) { page ->
+            when (val screen = screens[page]) {
+                is Screen.Home -> HomeScreen(pagerState, onNavigate)
+                is Screen.Explore -> ExploreScreen(pagerState, onNavigate, initialCategory = selectedCategory.value)
+                is Screen.Create -> CreateScreen(onBackClick = { onNavigate(0, null) })
+                is Screen.Settings -> SettingsScreen(
+                    onNavigate = onNavigate, 
+                    onFavoritesClick = { currentScreen = Screen.Favorites },
+                    onSearchClick = { currentScreen = Screen.Search }
+                )
+                is Screen.Favorites -> {} 
+                is Screen.Search -> {}
+            }
+        }
+
+        if (currentScreen is Screen.Favorites) {
+            FavoritesScreen(onBackClick = { currentScreen = Screen.Settings })
+        }
+        
+        if (currentScreen is Screen.Search) {
+            SearchScreen(onBackClick = { currentScreen = Screen.Settings })
         }
     }
 }

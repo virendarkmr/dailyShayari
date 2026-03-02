@@ -33,4 +33,12 @@ class ExploreViewModel(private val shayariRepository: ShayariRepository) : ViewM
     fun selectCategory(category: String?) {
         _selectedCategory.value = category
     }
+
+    fun toggleFavorite(shayari: ShayariEntity, imageName: String) {
+        viewModelScope.launch {
+            shayariRepository.toggleFavorite(shayari, imageName)
+        }
+    }
+
+    fun isFavorite(id: String): Flow<Boolean> = shayariRepository.isFavorite(id)
 }
