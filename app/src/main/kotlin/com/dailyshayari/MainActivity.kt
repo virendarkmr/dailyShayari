@@ -17,10 +17,9 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Create
-import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +36,7 @@ sealed class Screen {
     object Home : Screen()
     object Explore : Screen()
     object Create : Screen()
+    object Settings : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen() {
-    val screens = listOf(Screen.Home, Screen.Explore, Screen.Create)
+    val screens = listOf(Screen.Home, Screen.Explore, Screen.Create, Screen.Settings)
     val pagerState = rememberPagerState(pageCount = { screens.size })
     val coroutineScope = rememberCoroutineScope()
     val selectedCategory = remember { mutableStateOf<String?>(null) }
@@ -95,6 +95,7 @@ fun MainScreen() {
             is Screen.Home -> HomeScreen(pagerState, onNavigate)
             is Screen.Explore -> ExploreScreen(pagerState, onNavigate, initialCategory = selectedCategory.value)
             is Screen.Create -> CreateScreen(onBackClick = { onNavigate(0, null) })
+            is Screen.Settings -> SettingsScreen(onNavigate = onNavigate)
         }
     }
 }
@@ -125,8 +126,12 @@ fun AppBottomBar(pagerState: PagerState, onNavigate: (Int, String?) -> Unit) {
                 selected = pagerState.currentPage == 2,
                 onClick = { onNavigate(2, null) }
             )
-            BottomNavigationItem(icon = Icons.Rounded.Favorite, label = "Favorites", selected = false, onClick = {})
-            BottomNavigationItem(icon = Icons.Rounded.Person, label = "Profile", selected = false, onClick = {})
+            BottomNavigationItem(
+                icon = Icons.Rounded.Settings,
+                label = "Settings",
+                selected = pagerState.currentPage == 3,
+                onClick = { onNavigate(3, null) }
+            )
         }
     }
 }
