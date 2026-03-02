@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -30,6 +33,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.theme.*
+import com.dailyshayari.util.copyTextToClipboard
+import com.dailyshayari.util.isHindi
 import com.dailyshayari.viewmodel.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -50,15 +55,42 @@ fun SearchScreen(onBackClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Search Shayari", color = luxuryText.appTitle) },
+                title = { 
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surface),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Search,
+                                contentDescription = null,
+                                tint = GoldPrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            "Search Shayari", 
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = luxuryText.appTitle
+                        ) 
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back", tint = luxuryText.appTitle)
                     }
                 },
                 actions = {
-                    TextButton(onClick = { viewModel.resetSearch() }) {
-                        Text("Reset", color = luxuryText.secondary)
+                    IconButton(onClick = { viewModel.resetSearch() }) {
+                        Icon(
+                            imageVector = Icons.Rounded.RestartAlt, 
+                            contentDescription = "Reset", 
+                            tint = luxuryText.secondary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -150,7 +182,8 @@ fun SearchScreen(onBackClick: () -> Unit) {
                 Text("Recent Searches", style = MaterialTheme.typography.titleMedium, color = luxuryText.body)
                 androidx.compose.foundation.layout.FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     recentSearches.forEach { search ->
                         Surface(
@@ -195,6 +228,7 @@ fun SearchScreen(onBackClick: () -> Unit) {
 
 @Composable
 fun SearchShayariCard(shayari: ShayariEntity) {
+    val context = LocalContext.current
     val luxuryText = LocalLuxuryTextColors.current
     val palette = remember(shayari.id) { 
         listOf(
@@ -225,12 +259,30 @@ fun SearchShayariCard(shayari: ShayariEntity) {
                     color = GoldPrimary,
                     style = MaterialTheme.typography.labelSmall
                 )
+                
+                // Copy text feature
+                IconButton(
+                    onClick = { copyTextToClipboard(context, shayari.text) },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ContentCopy,
+                        contentDescription = "Copy",
+                        tint = luxuryText.secondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(8.dp))
+            
+            val isHindi = isHindi(shayari.text)
+            val fontFamily = if (isHindi) NotoSansDevanagariFontFamily else PlayfairDisplayFontFamily
+            
             Text(
                 text = shayari.text,
                 color = luxuryText.body,
                 style = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = fontFamily,
                     lineHeight = 24.sp
                 )
             )
