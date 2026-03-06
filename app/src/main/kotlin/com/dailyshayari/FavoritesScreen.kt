@@ -220,7 +220,7 @@ fun FavoriteTextCardContent(favorite: FavoriteShayariEntity, modifier: Modifier 
 
 @Composable
 fun FavoriteImageCardContent(favorite: FavoriteShayariEntity) {
-    Box(modifier = Modifier.fillMaxWidth().aspectRatio(3f / 4f)) {
+    Box(modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f)) { // Changed from 3f/4f to 2f/3f
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(favorite.imageUrl)

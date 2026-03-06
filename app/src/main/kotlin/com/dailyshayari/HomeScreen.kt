@@ -270,7 +270,7 @@ fun TodaysSpecial(shayaris: List<Shayari>, viewModel: HomeViewModel) {
 fun TodaysSpecialContent(shayari: Shayari?, imageUrl: String?) {
     Box(
         modifier = Modifier
-            .height(300.dp)
+            .aspectRatio(2f / 3f) // Changed from height(300.dp) to 2:3 aspect ratio
     ) {
         val brightness = 0.93f
         val colorMatrix = floatArrayOf(

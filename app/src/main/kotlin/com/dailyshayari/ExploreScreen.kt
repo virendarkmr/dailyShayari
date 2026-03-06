@@ -346,7 +346,7 @@ fun TextCardContent(shayari: ShayariEntity, palette: List<Color>, modifier: Modi
 
 @Composable
 fun ImageCardContent(shayari: ShayariEntity, imageUrl: String?) {
-    Box(modifier = Modifier.fillMaxWidth().aspectRatio(3f / 4f)) {
+    Box(modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f)) { // Changed from 3f/4f to 2f/3f
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(imageUrl)
