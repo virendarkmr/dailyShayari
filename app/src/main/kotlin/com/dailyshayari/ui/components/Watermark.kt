@@ -21,21 +21,22 @@ import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
 fun BoxScope.AppWatermark(
     modifier: Modifier = Modifier,
     backgroundColor: Color? = null,
-    color: Color = GoldPrimary.copy(alpha = 0.7f)
+    color: Color = GoldPrimary.copy(alpha = 0.9f) // Increased default alpha
 ) {
     // Determine the best text color if a background color is provided
     val textColor = if (backgroundColor != null) {
-        if (backgroundColor.luminance() > 0.5f) Color.Black.copy(alpha = 0.6f) 
-        else Color.White.copy(alpha = 0.7f)
+        // Use higher contrast colors
+        if (backgroundColor.luminance() > 0.5f) Color.Black.copy(alpha = 0.8f) 
+        else Color.White.copy(alpha = 0.9f)
     } else {
         color
     }
 
-    // Add a shadow for guaranteed visibility on any complex background
+    // Fixed shadow logic: Shadow should be dark for light text and light for dark text
     val textShadow = Shadow(
-        color = if (textColor.luminance() > 0.5f) Color.White.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.5f),
-        offset = Offset(1f, 1f),
-        blurRadius = 2f
+        color = if (textColor.luminance() > 0.5f) Color.Black.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.5f),
+        offset = Offset(2f, 2f),
+        blurRadius = 4f
     )
 
     Text(
@@ -46,8 +47,8 @@ fun BoxScope.AppWatermark(
         style = MaterialTheme.typography.labelSmall.copy(
             fontFamily = PlayfairDisplayFontFamily,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp,
-            fontSize = 10.sp,
+            letterSpacing = 1.2.sp,
+            fontSize = 11.sp, // Slightly larger
             shadow = textShadow
         ),
         color = textColor
