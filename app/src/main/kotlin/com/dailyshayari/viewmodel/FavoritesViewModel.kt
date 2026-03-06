@@ -16,9 +16,9 @@ class FavoritesViewModel(private val shayariRepository: ShayariRepository) : Vie
     val favorites: StateFlow<List<FavoriteShayariEntity>> = shayariRepository.getAllFavorites()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun toggleFavorite(shayari: ShayariEntity, imageName: String) {
+    fun toggleFavorite(shayari: ShayariEntity, imageUrl: String) {
         viewModelScope.launch {
-            shayariRepository.toggleFavorite(shayari, imageName)
+            shayariRepository.toggleFavorite(shayari, imageUrl)
         }
     }
     
@@ -31,7 +31,7 @@ class FavoritesViewModel(private val shayariRepository: ShayariRepository) : Vie
                 createdAt = 0, // Not needed for toggle
                 updatedAt = 0
             )
-            shayariRepository.toggleFavorite(shayari, favorite.imageName)
+            shayariRepository.toggleFavorite(shayari, favorite.imageUrl)
         }
     }
 

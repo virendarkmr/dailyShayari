@@ -26,7 +26,7 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
 
         return when {
             modelClass.isAssignableFrom(ExploreViewModel::class.java) -> {
-                ExploreViewModel(shayariRepository) as T
+                ExploreViewModel(shayariRepository, userPreferencesRepository) as T
             }
             modelClass.isAssignableFrom(CreateViewModel::class.java) -> {
                 CreateViewModel() as T

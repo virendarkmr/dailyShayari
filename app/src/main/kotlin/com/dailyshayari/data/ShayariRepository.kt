@@ -9,12 +9,19 @@ import com.dailyshayari.db.FavoriteShayariDao
 import com.dailyshayari.db.FavoriteShayariEntity
 import com.dailyshayari.db.ShayariDao
 import com.dailyshayari.db.ShayariEntity
+import com.dailyshayari.di.FirebaseModule
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.util.concurrent.TimeUnit
+import kotlin.math.absoluteValue
 
 class ShayariRepository(
     private val shayariDao: ShayariDao,
@@ -49,12 +56,12 @@ class ShayariRepository(
         ).flow
     }
 
-    suspend fun toggleFavorite(shayari: ShayariEntity, imageName: String) {
+    suspend fun toggleFavorite(shayari: ShayariEntity, imageUrl: String) {
         val isFav = favoriteShayariDao.isFavorite(shayari.id).first()
         if (isFav) {
-            favoriteShayariDao.delete(FavoriteShayariEntity(shayari.id, shayari.text, shayari.category, imageName))
+            favoriteShayariDao.delete(FavoriteShayariEntity(shayari.id, shayari.text, shayari.category, imageUrl))
         } else {
-            favoriteShayariDao.insert(FavoriteShayariEntity(shayari.id, shayari.text, shayari.category, imageName))
+            favoriteShayariDao.insert(FavoriteShayariEntity(shayari.id, shayari.text, shayari.category, imageUrl))
         }
     }
 
@@ -78,6 +85,50 @@ class ShayariRepository(
                 val shayaris = Json.decodeFromString<List<ShayariEntity>>(jsonString)
                 shayariDao.insertAll(shayaris)
             }
+            fetchRemoteConfigIfNeeded()
         }
+    }
+
+    private suspend fun fetchRemoteConfigIfNeeded() {
+        val lastFetch = userPreferencesRepository.lastFetchTime.first()
+        val currentTime = System.currentTimeMillis()
+        
+        // Fetch once a day (24 hours = 86400000 ms)
+        if (currentTime - lastFetch > TimeUnit.DAYS.toMillis(1)) {
+            try {
+                val remoteConfig = Firebase.remoteConfig
+                val configSettings = remoteConfigSettings {
+                    minimumFetchIntervalInSeconds = 3600 // Can fetch every hour if needed, but we check once a day
+                }
+                remoteConfig.setConfigSettingsAsync(configSettings)
+                
+                val fetched = remoteConfig.fetchAndActivate().await()
+                if (fetched || lastFetch == 0L) {
+                    val gitaMax = remoteConfig.getLong("gita_max").toInt().coerceAtLeast(1)
+                    val randomMax = remoteConfig.getLong("random_max").toInt().coerceAtLeast(1)
+                    userPreferencesRepository.updateConfig(gitaMax, randomMax, currentTime)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    suspend fun getImageUrl(shayari: ShayariEntity): String {
+        val category = mapCategory(shayari.category)
+        val isGita = category == "gita"
+        
+        val maxImages = if (isGita) {
+            userPreferencesRepository.gitaMax.first()
+        } else {
+            userPreferencesRepository.randomMax.first()
+        }
+        
+        val folder = if (isGita) "gita" else "random"
+        val imageIndex = (shayari.id.hashCode().absoluteValue % maxImages) + 1
+        
+        // Construct the Firebase Storage download URL
+        // Format: https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<folder>%2F<name>?alt=media
+        return "${FirebaseModule.firebaseStorageBaseUrl}/${folder}%2F${imageIndex}.webp?alt=media"
     }
 }

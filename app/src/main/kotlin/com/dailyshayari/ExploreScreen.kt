@@ -81,6 +81,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.components.AppWatermark
 import com.dailyshayari.ui.explore.ExploreViewModel
@@ -124,6 +126,7 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
 
     val fullCaptureController = rememberCaptureController()
     var captureTarget by remember { mutableStateOf<ShayariEntity?>(null) }
+    var captureTargetImageUrl by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(captureTarget) {
         if (captureTarget != null) {
@@ -156,7 +159,10 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
             ShayariFeed(
                 scrollState = scrollState,
                 shayaris = shayaris,
-                onRequestFullCapture = { sh -> captureTarget = sh },
+                onRequestFullCapture = { sh, url -> 
+                    captureTarget = sh
+                    captureTargetImageUrl = url
+                },
                 viewModel = viewModel
             )
 
@@ -167,6 +173,7 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
                         onCaptured = { imageBitmap, _ ->
                             imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
                             captureTarget = null
+                            captureTargetImageUrl = null
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -178,7 +185,7 @@ fun ExploreScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, in
                                 .clip(RoundedCornerShape(24.dp))
                                 .fillMaxWidth()
                         ) {
-                            ImageCardContent(shayari = target)
+                            ImageCardContent(shayari = target, imageUrl = captureTargetImageUrl)
                         }
                     }
                 }
@@ -215,10 +222,9 @@ fun ShayariFeed(
     modifier: Modifier = Modifier,
     scrollState: LazyListState,
     shayaris: LazyPagingItems<ShayariEntity>,
-    onRequestFullCapture: (ShayariEntity) -> Unit = {},
+    onRequestFullCapture: (ShayariEntity, String?) -> Unit = { _, _ -> },
     viewModel: ExploreViewModel
 ) {
-    // Handle loading state
     if (shayaris.itemCount == 0) {
         if (shayaris.loadState.refresh is LoadState.Loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -238,7 +244,6 @@ fun ShayariFeed(
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Use Int.MAX_VALUE to simulate infinite scroll loop as it was previously working for the user
         items(Int.MAX_VALUE) { index ->
             val actualIndex = index % shayaris.itemCount
             val shayari = shayaris[actualIndex]
@@ -258,11 +263,18 @@ private val colorPalettes = listOf(
 )
 
 @Composable
-fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) -> Unit = {}, viewModel: ExploreViewModel) {
+fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity, String?) -> Unit = { _, _ -> }, viewModel: ExploreViewModel) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val captureController = rememberCaptureController()
     val isImageCard = remember(shayari.id) { shayari.id.hashCode() % 2 == 0 }
+
+    val gitaMax by viewModel.gitaMax.collectAsState(initial = 5)
+    val randomMax by viewModel.randomMax.collectAsState(initial = 10)
+    
+    val imageUrl = remember(shayari.id, gitaMax, randomMax) { 
+        viewModel.getImageUrl(shayari, gitaMax, randomMax) 
+    }
 
     if (isImageCard) {
         Box(modifier = Modifier.fillMaxWidth().shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp)).clip(RoundedCornerShape(24.dp))) {
@@ -270,14 +282,12 @@ fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity) ->
                 imageBitmap?.let { shareBitmap(context, it.asAndroidBitmap()) }
             }, modifier = Modifier.fillMaxSize()) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    val imageResId = getImageResId(context, shayari)
-                    ImageCardContent(shayari = shayari)
+                    ImageCardContent(shayari = shayari, imageUrl = imageUrl)
                     ActionRow(
                         shayari = shayari,
-                        onShareClick = { onRequestFullCapture(shayari) },
+                        onShareClick = { onRequestFullCapture(shayari, imageUrl) },
                         onFavoriteClick = {
-                            val imageName = if (imageResId != 0) context.resources.getResourceEntryName(imageResId) else "bg_1"
-                            viewModel.toggleFavorite(shayari, imageName)
+                            viewModel.toggleFavorite(shayari, imageUrl)
                         },
                         isFavoriteFlow = viewModel.isFavorite(shayari.id),
                         modifier = Modifier.align(Alignment.BottomCenter).background(Color.Transparent)
@@ -334,34 +344,16 @@ fun TextCardContent(shayari: ShayariEntity, palette: List<Color>, modifier: Modi
     }
 }
 
-private object DrawableUtils {
-    private var imageCount: Int? = null
-    fun getBgImageCount(context: Context): Int {
-        if (imageCount != null) return imageCount!!
-        var count = 0
-        while (context.resources.getIdentifier("bg_${count + 1}", "drawable", context.packageName) != 0) {
-            count++
-        }
-        imageCount = count
-        return count
-    }
-}
-
-fun getImageResId(context: Context, shayari: ShayariEntity): Int {
-    val imageCount = DrawableUtils.getBgImageCount(context)
-    if (imageCount == 0) return 0
-    val imageIndex = (shayari.id.hashCode().absoluteValue % imageCount) + 1
-    return context.resources.getIdentifier("bg_$imageIndex", "drawable", context.packageName)
-}
-
 @Composable
-fun ImageCardContent(shayari: ShayariEntity) {
-    val context = LocalContext.current
-    val imageResId = getImageResId(context, shayari)
-
+fun ImageCardContent(shayari: ShayariEntity, imageUrl: String?) {
     Box(modifier = Modifier.fillMaxWidth().aspectRatio(3f / 4f)) {
         AsyncImage(
-            model = if (imageResId != 0) imageResId else R.drawable.bg_1,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl)
+                .crossfade(true)
+                .diskCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()

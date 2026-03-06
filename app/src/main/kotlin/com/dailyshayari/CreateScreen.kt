@@ -88,8 +88,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.dailyshayari.R
 import com.dailyshayari.db.ShayariEntity
+import com.dailyshayari.di.FirebaseModule
 import com.dailyshayari.ui.components.AppWatermark
 import com.dailyshayari.ui.components.CategoryChips
 import com.dailyshayari.ui.explore.ExploreViewModel
@@ -328,14 +331,19 @@ fun CreateScreen(
                         Box(modifier = Modifier.fillMaxSize().then(abstractModifier)) {
                             selectedImage?.let {
                                 AsyncImage(
-                                    model = it,
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(it)
+                                        .crossfade(true)
+                                        .diskCachePolicy(CachePolicy.ENABLED)
+                                        .memoryCachePolicy(CachePolicy.ENABLED)
+                                        .build(),
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Fit,
                                     onSuccess = {
                                         val drawable = it.result.drawable
                                         val imageAspectRatio = drawable.intrinsicWidth.toFloat() / drawable.intrinsicHeight.toFloat()
-                                        createViewModel.onImageSelected(selectedImage, imageAspectRatio)
+                                        createViewModel.onImageSelected(selectedImage!!, imageAspectRatio)
                                     }
                                 )
                             }
@@ -414,10 +422,10 @@ fun EditorActionBar(
         }
     )
 
-    val context = LocalContext.current
-    val imageResources = remember {
-        (1..19).map {
-            context.resources.getIdentifier("bg_$it", "drawable", context.packageName)
+    val randomMax by viewModel.randomMax.collectAsState(initial = 10)
+    val imageResources = remember(randomMax) {
+        (1..randomMax).map {
+            "${FirebaseModule.firebaseStorageBaseUrl}/random%2F${it}.webp?alt=media"
         }
     }
     val shayaris = viewModel.shayaris.collectAsLazyPagingItems()
@@ -493,10 +501,8 @@ fun EditorActionBar(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
                         }
-                        imageResources.forEach {
-                            if (it != 0) {
-                                BackgroundThumbnail(it) { onImageSelected(it) }
-                            }
+                        imageResources.forEach { url ->
+                            BackgroundThumbnail(url) { onImageSelected(url) }
                         }
                     }
 
@@ -660,9 +666,14 @@ fun SectionHeader(title: String) {
 }
 
 @Composable
-fun BackgroundThumbnail(resId: Int, onClick: () -> Unit) {
+fun BackgroundThumbnail(url: String, onClick: () -> Unit) {
     AsyncImage(
-        model = resId,
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(url)
+            .crossfade(true)
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .build(),
         contentDescription = null,
         modifier = Modifier
             .size(72.dp)

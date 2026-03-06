@@ -9,6 +9,6 @@ data class FavoriteShayariEntity(
     val id: String,
     val text: String,
     val category: String,
-    val imageName: String, // Store the name of the background image (e.g., "bg_1")
+    val imageUrl: String, // Store the URL of the background image from Firebase Storage
     val favoritedAt: Long = System.currentTimeMillis()
 )

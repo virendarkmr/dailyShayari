@@ -1,212 +1,218 @@
 [
-  {
-    "id": "love_001",
-    "text": "तेरी मुस्कान में कुछ ऐसा नूर है,\nजैसे हर शाम में छुपा कोई सवेरा ज़रूर है।",
-    "category": "love",
-    "createdAt": 1710000000000,
-    "updatedAt": 1710000000000
-  },
-  {
-    "id": "sad_001",
-    "text": "कुछ लोग दिल के इतने क़रीब होते हैं,\nफिर भी मुक़द्दर में नहीं होते।",
-    "category": "sad",
-    "createdAt": 1709900000000,
-    "updatedAt": 1709900000000
-  },
-  {
-    "id": "motivation_001",
-    "text": "रास्ते मुश्किल सही, पर मंज़िल भी खास होगी,\nहौसला अगर साथ हो तो हर हार भी जीत होगी।",
-    "category": "motivation",
-    "createdAt": 1709800000000,
-    "updatedAt": 1709800000000
-  },
-  {
-    "id": "friendship_001",
-    "text": "दोस्ती वो नहीं जो हर रोज़ मिले,\nदोस्ती वो है जो हर हाल में साथ चले।",
-    "category": "friendship",
-    "createdAt": 1709700000000,
-    "updatedAt": 1709700000000
-  },
-  {
-    "id": "gita_001",
-    "text": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।\n(तुम्हारा अधिकार केवल कर्म करने में है, फल पर नहीं।)",
-    "category": "gita",
-    "createdAt": 1709600000000,
-    "updatedAt": 1709600000000
-  },
-  {
-    "id": "quotes_001",
-    "text": "Life is not perfect, but your attitude can be.",
-    "category": "quotes",
-    "createdAt": 1709500000000,
-    "updatedAt": 1709500000000
-  },
-  {
-    "id": "love_002",
-    "text": "Dil ke kone mein bas ek hi tasveer hai,\naur wo tumhari hai.",
-    "category": "love",
-    "createdAt": 1709400000000,
-    "updatedAt": 1709400000000
-  },
-  {
-    "id": "sad_002",
-    "text": "Kabhi kabhi khamoshi hi sabse bada jawab hoti hai.",
-    "category": "sad",
-    "createdAt": 1709300000000,
-    "updatedAt": 1709300000000
-  },
-  {
-    "id": "motivation_002",
-    "text": "Dream big, work hard, stay consistent.",
-    "category": "motivation",
-    "createdAt": 1709200000000,
-    "updatedAt": 1709200000000
-  },
-  {
-    "id": "friendship_002",
-    "text": "Yaar wahi jo musibat mein kaam aaye,\nwarna dosti to har koi nibhaaye.",
-    "category": "friendship",
-    "createdAt": 1709100000000,
-    "updatedAt": 1709100000000
-  },
-  {
-    "id": "gita_002",
-    "text": "योगस्थः कुरु कर्माणि।\n(योग में स्थित होकर अपना कर्म करो।)",
-    "category": "gita",
-    "createdAt": 1709000000000,
-    "updatedAt": 1709000000000
-  },
-  {
-    "id": "quotes_002",
-    "text": "Sometimes the strongest people are the ones who smile through silent pain.",
-    "category": "quotes",
-    "createdAt": 1708900000000,
-    "updatedAt": 1708900000000
-  },
-  {
-    "id": "love_003",
-    "text": "इश्क़ वो नहीं जो दिखाया जाए,\nइश्क़ वो है जो निभाया जाए।",
-    "category": "love",
-    "createdAt": 1708800000000,
-    "updatedAt": 1708800000000
-  },
-  {
-    "id": "sad_003",
-    "text": "The worst feeling is pretending you don’t care.",
-    "category": "sad",
-    "createdAt": 1708700000000,
-    "updatedAt": 1708700000000
-  },
-  {
-    "id": "motivation_003",
-    "text": "हर सुबह एक नया मौका है,\nखुद को बेहतर बनाने का।",
-    "category": "motivation",
-    "createdAt": 1708600000000,
-    "updatedAt": 1708600000000
-  },
-  {
-    "id": "friendship_003",
-    "text": "True friendship isn’t about being inseparable,\nit’s about being separated and nothing changes.",
-    "category": "friendship",
-    "createdAt": 1708500000000,
-    "updatedAt": 1708500000000
-  },
-  {
-    "id": "gita_003",
-    "text": "न हि कश्चित् क्षणमपि जातु तिष्ठत्यकर्मकृत्।\n(कोई भी क्षणभर भी बिना कर्म के नहीं रह सकता।)",
-    "category": "gita",
-    "createdAt": 1708400000000,
-    "updatedAt": 1708400000000
-  },
-  {
-    "id": "quotes_003",
-    "text": "Small steps every day lead to big results.",
-    "category": "quotes",
-    "createdAt": 1708300000000,
-    "updatedAt": 1708300000000
-  },
-  {
-    "id": "love_004",
-    "text": "तू पास नहीं फिर भी एहसास है,\nहर धड़कन में तेरा ही नाम है।",
-    "category": "love",
-    "createdAt": 1708200000000,
-    "updatedAt": 1708200000000
-  },
-  {
-    "id": "sad_004",
-    "text": "दिल को समझाया बहुत,\nपर दर्द मानने को तैयार नहीं।",
-    "category": "sad",
-    "createdAt": 1708100000000,
-    "updatedAt": 1708100000000
-  },
-  {
-    "id": "motivation_004",
-    "text": "Success doesn’t come from comfort zones.",
-    "category": "motivation",
-    "createdAt": 1708000000000,
-    "updatedAt": 1708000000000
-  },
-  {
-    "id": "friendship_004",
-    "text": "दोस्ती में ना हिसाब होता है,\nना जवाब होता है।",
-    "category": "friendship",
-    "createdAt": 1707900000000,
-    "updatedAt": 1707900000000
-  },
-  {
-    "id": "gita_004",
-    "text": "समत्वं योग उच्यते।\n(समभाव ही योग कहलाता है।)",
-    "category": "gita",
-    "createdAt": 1707800000000,
-    "updatedAt": 1707800000000
-  },
-  {
-    "id": "quotes_004",
-    "text": "Your vibe attracts your tribe.",
-    "category": "quotes",
-    "createdAt": 1707700000000,
-    "updatedAt": 1707700000000
-  },
-  {
-    "id": "love_005",
-    "text": "Love is not about possession,\nit’s about appreciation.",
-    "category": "love",
-    "createdAt": 1707600000000,
-    "updatedAt": 1707600000000
-  },
-  {
-    "id": "sad_005",
-    "text": "कुछ अधूरी कहानियाँ ही दिल के सबसे क़रीब होती हैं।",
-    "category": "sad",
-    "createdAt": 1707500000000,
-    "updatedAt": 1707500000000
-  },
-  {
-    "id": "motivation_005",
-    "text": "अगर ठान लिया है,\nतो जीत भी तुम्हारी ही होगी।",
-    "category": "motivation",
-    "createdAt": 1707400000000,
-    "updatedAt": 1707400000000
-  },
-  {
-    "id": "friendship_005",
-    "text": "Friendship is the comfort of knowing that even when you feel alone, you aren’t.",
-    "category": "friendship",
-    "createdAt": 1707300000000,
-    "updatedAt": 1707300000000
-  },
-  {
-    "id": "gita_005",
-    "text": "धैर्यं सर्वत्र साधनम्।\n(धैर्य हर जगह सफलता की कुंजी है।)",
-    "category": "gita",
-    "createdAt": 1707200000000,
-    "updatedAt": 1707200000000
-  },
-  {
-    "id": "quotes_005",
-    "text": "Believe in yourself and magic will happen.",
-    "category": "quotes",
-    "createdAt": 1707100000000,
-    "updatedAt": 1707100000000
-  }
+  {"id":"love_001","text":"तेरी मुस्कान में कुछ ऐसा नूर है,\nजैसे हर शाम में छुपा कोई सवेरा ज़रूर है।","category":"love","createdAt":1710000000000,"updatedAt":1710000000000},
+  {"id":"love_002","text":"Dil ke kone mein bas ek hi tasveer hai,\naur wo tumhari hai.","category":"love","createdAt":1709400000000,"updatedAt":1709400000000},
+  {"id":"love_003","text":"इश्क़ वो नहीं जो दिखाया जाए,\nइश्क़ वो है जो निभाया जाए।","category":"love","createdAt":1708800000000,"updatedAt":1708800000000},
+  {"id":"love_004","text":"तू पास नहीं फिर भी एहसास है,\nहर धड़कन में तेरा ही नाम है।","category":"love","createdAt":1708200000000,"updatedAt":1708200000000},
+  {"id":"love_005","text":"Love is not about possession,\nit’s about appreciation.","category":"love","createdAt":1707600000000,"updatedAt":1707600000000},
+
+  {"id":"sad_001","text":"कुछ लोग दिल के इतने क़रीब होते हैं,\nफिर भी मुक़द्दर में नहीं होते।","category":"sad","createdAt":1709900000000,"updatedAt":1709900000000},
+  {"id":"sad_002","text":"Kabhi kabhi khamoshi hi sabse bada jawab hoti hai.","category":"sad","createdAt":1709300000000,"updatedAt":1709300000000},
+  {"id":"sad_003","text":"The worst feeling is pretending you don’t care.","category":"sad","createdAt":1708700000000,"updatedAt":1708700000000},
+  {"id":"sad_004","text":"दिल को समझाया बहुत,\nपर दर्द मानने को तैयार नहीं।","category":"sad","createdAt":1708100000000,"updatedAt":1708100000000},
+  {"id":"sad_005","text":"कुछ अधूरी कहानियाँ ही दिल के सबसे क़रीब होती हैं।","category":"sad","createdAt":1707500000000,"updatedAt":1707500000000},
+
+  {"id":"motivation_001","text":"रास्ते मुश्किल सही, पर मंज़िल भी खास होगी,\nहौसला अगर साथ हो तो हर हार भी जीत होगी।","category":"motivation","createdAt":1709800000000,"updatedAt":1709800000000},
+  {"id":"motivation_002","text":"Dream big, work hard, stay consistent.","category":"motivation","createdAt":1709200000000,"updatedAt":1709200000000},
+  {"id":"motivation_003","text":"हर सुबह एक नया मौका है,\nखुद को बेहतर बनाने का।","category":"motivation","createdAt":1708600000000,"updatedAt":1708600000000},
+  {"id":"motivation_004","text":"Success doesn’t come from comfort zones.","category":"motivation","createdAt":1708000000000,"updatedAt":1708000000000},
+  {"id":"motivation_005","text":"अगर ठान लिया है,\nतो जीत भी तुम्हारी ही होगी।","category":"motivation","createdAt":1707400000000,"updatedAt":1707400000000},
+
+  {"id":"friendship_001","text":"दोस्ती वो नहीं जो हर रोज़ मिले,\nदोस्ती वो है जो हर हाल में साथ चले।","category":"friendship","createdAt":1709700000000,"updatedAt":1709700000000},
+  {"id":"friendship_002","text":"Yaar wahi jo musibat mein kaam aaye,\nwarna dosti to har koi nibhaaye.","category":"friendship","createdAt":1709100000000,"updatedAt":1709100000000},
+  {"id":"friendship_003","text":"True friendship isn’t about being inseparable,\nit’s about being separated and nothing changes.","category":"friendship","createdAt":1708500000000,"updatedAt":1708500000000},
+  {"id":"friendship_004","text":"दोस्ती में ना हिसाब होता है,\nना जवाब होता है।","category":"friendship","createdAt":1707900000000,"updatedAt":1707900000000},
+  {"id":"friendship_005","text":"Friendship is the comfort of knowing that even when you feel alone, you aren’t.","category":"friendship","createdAt":1707300000000,"updatedAt":1707300000000},
+
+  {"id":"gita_001","text":"कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।","category":"gita","createdAt":1709600000000,"updatedAt":1709600000000},
+  {"id":"gita_002","text":"योगस्थः कुरु कर्माणि।","category":"gita","createdAt":1709000000000,"updatedAt":1709000000000},
+  {"id":"gita_003","text":"न हि कश्चित् क्षणमपि जातु तिष्ठत्यकर्मकृत्।","category":"gita","createdAt":1708400000000,"updatedAt":1708400000000},
+  {"id":"gita_004","text":"समत्वं योग उच्यते।","category":"gita","createdAt":1707800000000,"updatedAt":1707800000000},
+  {"id":"gita_005","text":"धैर्यं सर्वत्र साधनम्।","category":"gita","createdAt":1707200000000,"updatedAt":1707200000000},
+
+  {"id":"quotes_001","text":"Life is not perfect, but your attitude can be.","category":"quotes","createdAt":1709500000000,"updatedAt":1709500000000},
+  {"id":"quotes_002","text":"Sometimes the strongest people are the ones who smile through silent pain.","category":"quotes","createdAt":1708900000000,"updatedAt":1708900000000},
+  {"id":"quotes_003","text":"Small steps every day lead to big results.","category":"quotes","createdAt":1708300000000,"updatedAt":1708300000000},
+  {"id":"quotes_004","text":"Your vibe attracts your tribe.","category":"quotes","createdAt":1707700000000,"updatedAt":1707700000000},
+  {"id":"quotes_005","text":"Believe in yourself and magic will happen.","category":"quotes","createdAt":1707100000000,"updatedAt":1707100000000},
+
+  {"id":"love_011","text":"तेरी मुस्कान में वो जादू है, जो हर ग़म भुला देता है।","category":"love","createdAt":1706800000000,"updatedAt":1706800000000},
+  {"id":"love_012","text":"तुम मिल गए तो लगा जैसे पूरी दुनिया मिल गई।","category":"love","createdAt":1706790000000,"updatedAt":1706790000000},
+  {"id":"love_013","text":"तेरा नाम ही काफी है मेरी धड़कनों को मुस्कुराने के लिए।","category":"love","createdAt":1706780000000,"updatedAt":1706780000000},
+  {"id":"love_014","text":"मोहब्बत वो एहसास है जो शब्दों में नहीं समाता।","category":"love","createdAt":1706770000000,"updatedAt":1706770000000},
+  {"id":"love_015","text":"तुम साथ हो तो हर रास्ता आसान लगता है।","category":"love","createdAt":1706760000000,"updatedAt":1706760000000},
+
+  {"id":"sad_011","text":"कभी कभी दिल की खामोशी सबसे ज्यादा शोर करती है।","category":"sad","createdAt":1706750000000,"updatedAt":1706750000000},
+  {"id":"sad_012","text":"जिनसे उम्मीद होती है, वही सबसे ज्यादा दर्द देते हैं।","category":"sad","createdAt":1706740000000,"updatedAt":1706740000000},
+  {"id":"sad_013","text":"कुछ रिश्ते अधूरे ही अच्छे लगते हैं।","category":"sad","createdAt":1706730000000,"updatedAt":1706730000000},
+  {"id":"sad_014","text":"खामोशियाँ भी बहुत कुछ कह जाती हैं।","category":"sad","createdAt":1706720000000,"updatedAt":1706720000000},
+  {"id":"sad_015","text":"दिल टूटता है तो आवाज़ नहीं आती।","category":"sad","createdAt":1706710000000,"updatedAt":1706710000000},
+
+  {"id":"motivation_011","text":"अगर ठान लिया है तो रास्ते खुद बन जाएंगे।","category":"motivation","createdAt":1706700000000,"updatedAt":1706700000000},
+  {"id":"motivation_012","text":"हर दिन एक नया मौका है खुद को बेहतर बनाने का।","category":"motivation","createdAt":1706690000000,"updatedAt":1706690000000},
+  {"id":"motivation_013","text":"Dream big and dare to fail.","category":"motivation","createdAt":1706680000000,"updatedAt":1706680000000},
+  {"id":"motivation_014","text":"मेहनत वो चाबी है जो हर दरवाज़ा खोल देती है।","category":"motivation","createdAt":1706670000000,"updatedAt":1706670000000},
+  {"id":"motivation_015","text":"Winners focus on winning, losers focus on winners.","category":"motivation","createdAt":1706660000000,"updatedAt":1706660000000},
+
+  {"id":"friendship_011","text":"सच्चे दोस्त वही होते हैं जो मुश्किल में साथ खड़े रहें।","category":"friendship","createdAt":1706650000000,"updatedAt":1706650000000},
+  {"id":"friendship_012","text":"दोस्ती वो रिश्ता है जिसमें शब्दों से ज्यादा भरोसा होता है।","category":"friendship","createdAt":1706640000000,"updatedAt":1706640000000},
+  {"id":"friendship_013","text":"True friends make your world brighter.","category":"friendship","createdAt":1706630000000,"updatedAt":1706630000000},
+  {"id":"friendship_014","text":"दोस्त वही जो हर हालत में साथ निभाए।","category":"friendship","createdAt":1706620000000,"updatedAt":1706620000000},
+  {"id":"friendship_015","text":"Friendship is a sheltering tree.","category":"friendship","createdAt":1706610000000,"updatedAt":1706610000000},
+
+  {"id":"gita_006","text":"जो हुआ अच्छा हुआ, जो हो रहा है अच्छा हो रहा है।","category":"gita","createdAt":1706600000000,"updatedAt":1706600000000},
+  {"id":"gita_007","text":"मनुष्य अपने कर्मों से महान बनता है।","category":"gita","createdAt":1706590000000,"updatedAt":1706590000000},
+  {"id":"gita_008","text":"कर्म करो, फल की चिंता मत करो।","category":"gita","createdAt":1706580000000,"updatedAt":1706580000000},
+  {"id":"gita_009","text":"धैर्य ही सच्ची शक्ति है।","category":"gita","createdAt":1706570000000,"updatedAt":1706570000000},
+  {"id":"gita_010","text":"जो स्वयं को जीत लेता है वही सच्चा विजेता है।","category":"gita","createdAt":1706560000000,"updatedAt":1706560000000},
+
+  {"id":"quotes_006","text":"Your mindset determines your future.","category":"quotes","createdAt":1706550000000,"updatedAt":1706550000000},
+  {"id":"quotes_007","text":"Small progress is still progress.","category":"quotes","createdAt":1706540000000,"updatedAt":1706540000000},
+  {"id":"quotes_008","text":"Stay positive, work hard, make it happen.","category":"quotes","createdAt":1706530000000,"updatedAt":1706530000000},
+  {"id":"quotes_009","text":"Happiness depends upon ourselves.","category":"quotes","createdAt":1706520000000,"updatedAt":1706520000000},
+  {"id":"quotes_010","text":"Believe in yourself and everything becomes possible.","category":"quotes","createdAt":1706510000000,"updatedAt":1706510000000},
+
+  {"id":"love_016","text":"तेरी यादें भी अजीब हैं,\nखुशी भी देती हैं और रुलाती भी हैं।","category":"love","createdAt":1706500000000,"updatedAt":1706500000000},
+  {"id":"love_017","text":"तुम्हारी हँसी मेरी दुनिया की सबसे खूबसूरत आवाज़ है।","category":"love","createdAt":1706490000000,"updatedAt":1706490000000},
+  {"id":"love_018","text":"When I see you smile, my whole day becomes brighter.","category":"love","createdAt":1706480000000,"updatedAt":1706480000000},
+  {"id":"love_019","text":"तुम्हारे बिना सब अधूरा सा लगता है।","category":"love","createdAt":1706470000000,"updatedAt":1706470000000},
+  {"id":"love_020","text":"Love begins with a smile and grows with trust.","category":"love","createdAt":1706460000000,"updatedAt":1706460000000},
+
+  {"id":"sad_016","text":"कभी कभी अकेलापन ही सबसे सच्चा साथी होता है।","category":"sad","createdAt":1706450000000,"updatedAt":1706450000000},
+  {"id":"sad_017","text":"दिल की चोट दिखती नहीं, पर महसूस बहुत होती है।","category":"sad","createdAt":1706440000000,"updatedAt":1706440000000},
+  {"id":"sad_018","text":"Sometimes silence is the loudest cry.","category":"sad","createdAt":1706430000000,"updatedAt":1706430000000},
+  {"id":"sad_019","text":"कुछ यादें भुलाए नहीं भूलती।","category":"sad","createdAt":1706420000000,"updatedAt":1706420000000},
+  {"id":"sad_020","text":"Tears come from the heart, not from the brain.","category":"sad","createdAt":1706410000000,"updatedAt":1706410000000},
+
+  {"id":"motivation_016","text":"अगर कोशिश सच्ची हो तो किस्मत भी झुक जाती है।","category":"motivation","createdAt":1706400000000,"updatedAt":1706400000000},
+  {"id":"motivation_017","text":"Great things never come from comfort zones.","category":"motivation","createdAt":1706390000000,"updatedAt":1706390000000},
+  {"id":"motivation_018","text":"हर मुश्किल एक नया सबक देती है।","category":"motivation","createdAt":1706380000000,"updatedAt":1706380000000},
+  {"id":"motivation_019","text":"Don’t stop until you’re proud.","category":"motivation","createdAt":1706370000000,"updatedAt":1706370000000},
+  {"id":"motivation_020","text":"सपने उन्हीं के पूरे होते हैं जो हार नहीं मानते।","category":"motivation","createdAt":1706360000000,"updatedAt":1706360000000},
+
+  {"id":"friendship_016","text":"दोस्ती में सबसे कीमती चीज़ भरोसा होता है।","category":"friendship","createdAt":1706350000000,"updatedAt":1706350000000},
+  {"id":"friendship_017","text":"Friends are the family we choose.","category":"friendship","createdAt":1706340000000,"updatedAt":1706340000000},
+  {"id":"friendship_018","text":"सच्चे दोस्त कभी साथ नहीं छोड़ते।","category":"friendship","createdAt":1706330000000,"updatedAt":1706330000000},
+  {"id":"friendship_019","text":"Friendship doubles joy and divides sorrow.","category":"friendship","createdAt":1706320000000,"updatedAt":1706320000000},
+  {"id":"friendship_020","text":"दोस्ती का रिश्ता सबसे अनमोल होता है।","category":"friendship","createdAt":1706310000000,"updatedAt":1706310000000},
+
+  {"id":"gita_011","text":"मन को जीतना ही सबसे बड़ी जीत है।","category":"gita","createdAt":1706300000000,"updatedAt":1706300000000},
+  {"id":"gita_012","text":"अहंकार त्यागो, शांति पाओ।","category":"gita","createdAt":1706290000000,"updatedAt":1706290000000},
+  {"id":"gita_013","text":"कर्म ही जीवन का आधार है।","category":"gita","createdAt":1706280000000,"updatedAt":1706280000000},
+  {"id":"gita_014","text":"जो धैर्य रखता है वही सफल होता है।","category":"gita","createdAt":1706270000000,"updatedAt":1706270000000},
+  {"id":"gita_015","text":"स्वयं पर विश्वास ही असली शक्ति है।","category":"gita","createdAt":1706260000000,"updatedAt":1706260000000},
+
+  {"id":"quotes_011","text":"Happiness grows when shared.","category":"quotes","createdAt":1706250000000,"updatedAt":1706250000000},
+  {"id":"quotes_012","text":"Life is short, make every moment count.","category":"quotes","createdAt":1706240000000,"updatedAt":1706240000000},
+  {"id":"quotes_013","text":"Attitude is the difference between success and failure.","category":"quotes","createdAt":1706230000000,"updatedAt":1706230000000},
+  {"id":"quotes_014","text":"Your future is created by what you do today.","category":"quotes","createdAt":1706220000000,"updatedAt":1706220000000},
+  {"id":"quotes_015","text":"Success begins with self-belief.","category":"quotes","createdAt":1706210000000,"updatedAt":1706210000000},
+
+  {"id":"love_021","text":"तुम्हारी एक झलक ही मेरे दिन को खास बना देती है।","category":"love","createdAt":1706200000000,"updatedAt":1706200000000},
+  {"id":"love_022","text":"मोहब्बत में शब्द कम और एहसास ज्यादा होते हैं।","category":"love","createdAt":1706190000000,"updatedAt":1706190000000},
+  {"id":"love_023","text":"Love is not perfect, but it makes life beautiful.","category":"love","createdAt":1706180000000,"updatedAt":1706180000000},
+  {"id":"love_024","text":"तेरे बिना अधूरी है मेरी हर खुशी।","category":"love","createdAt":1706170000000,"updatedAt":1706170000000},
+  {"id":"love_025","text":"You are the reason my heart smiles.","category":"love","createdAt":1706160000000,"updatedAt":1706160000000},
+
+  {"id":"sad_021","text":"कुछ दर्द ऐसे होते हैं जिन्हें शब्दों में नहीं कहा जा सकता।","category":"sad","createdAt":1706150000000,"updatedAt":1706150000000},
+  {"id":"sad_022","text":"कभी कभी सबसे मजबूत लोग ही अंदर से सबसे ज्यादा टूटे होते हैं।","category":"sad","createdAt":1706140000000,"updatedAt":1706140000000},
+  {"id":"sad_023","text":"Broken hearts still beat, but differently.","category":"sad","createdAt":1706130000000,"updatedAt":1706130000000},
+  {"id":"sad_024","text":"कुछ खामोशियां दिल को बहुत कुछ सिखा जाती हैं।","category":"sad","createdAt":1706120000000,"updatedAt":1706120000000},
+  {"id":"sad_025","text":"Pain changes people.","category":"sad","createdAt":1706110000000,"updatedAt":1706110000000},
+
+  {"id":"motivation_021","text":"हर दिन एक नई शुरुआत का मौका है।","category":"motivation","createdAt":1706100000000,"updatedAt":1706100000000},
+  {"id":"motivation_022","text":"Success comes to those who never quit.","category":"motivation","createdAt":1706090000000,"updatedAt":1706090000000},
+  {"id":"motivation_023","text":"मेहनत इतनी करो कि किस्मत भी कहे ले बेटा ये तो तेरा हक है।","category":"motivation","createdAt":1706080000000,"updatedAt":1706080000000},
+  {"id":"motivation_024","text":"Push yourself, because no one else will do it for you.","category":"motivation","createdAt":1706070000000,"updatedAt":1706070000000},
+  {"id":"motivation_025","text":"जो आज मेहनत करता है वही कल चमकता है।","category":"motivation","createdAt":1706060000000,"updatedAt":1706060000000},
+
+  {"id":"friendship_021","text":"दोस्ती का मतलब है बिना कहे समझ जाना।","category":"friendship","createdAt":1706050000000,"updatedAt":1706050000000},
+  {"id":"friendship_022","text":"Friends make life memorable.","category":"friendship","createdAt":1706040000000,"updatedAt":1706040000000},
+  {"id":"friendship_023","text":"दोस्ती में दूरियां मायने नहीं रखती।","category":"friendship","createdAt":1706030000000,"updatedAt":1706030000000},
+  {"id":"friendship_024","text":"A true friend is a priceless treasure.","category":"friendship","createdAt":1706020000000,"updatedAt":1706020000000},
+  {"id":"friendship_025","text":"दोस्ती वो रिश्ता है जो समय के साथ और मजबूत होता है।","category":"friendship","createdAt":1706010000000,"updatedAt":1706010000000},
+
+  {"id":"gita_016","text":"शांति भीतर से आती है, उसे बाहर मत खोजो।","category":"gita","createdAt":1706000000000,"updatedAt":1706000000000},
+  {"id":"gita_017","text":"धैर्य और विश्वास से हर मुश्किल आसान हो जाती है।","category":"gita","createdAt":1705990000000,"updatedAt":1705990000000},
+  {"id":"gita_018","text":"सच्चा सुख आत्मा की शांति में है।","category":"gita","createdAt":1705980000000,"updatedAt":1705980000000},
+  {"id":"gita_019","text":"कर्म करते रहो, सफलता स्वयं आएगी।","category":"gita","createdAt":1705970000000,"updatedAt":1705970000000},
+  {"id":"gita_020","text":"जो मन को नियंत्रित करता है वही सच्चा योगी है।","category":"gita","createdAt":1705960000000,"updatedAt":1705960000000},
+
+  {"id":"quotes_016","text":"Every day is a new chance to change your life.","category":"quotes","createdAt":1705950000000,"updatedAt":1705950000000},
+  {"id":"quotes_017","text":"Focus on progress, not perfection.","category":"quotes","createdAt":1705940000000,"updatedAt":1705940000000},
+  {"id":"quotes_018","text":"Your only limit is your mind.","category":"quotes","createdAt":1705930000000,"updatedAt":1705930000000},
+  {"id":"quotes_019","text":"Hard work beats talent when talent doesn’t work hard.","category":"quotes","createdAt":1705920000000,"updatedAt":1705920000000},
+  {"id":"quotes_020","text":"Great things take time.","category":"quotes","createdAt":1705910000000,"updatedAt":1705910000000},
+
+  {"id":"love_026","text":"तेरी बातों में वो सुकून है जो कहीं और नहीं मिलता।","category":"love","createdAt":1705900000000,"updatedAt":1705900000000},
+  {"id":"love_027","text":"जब तुम पास होते हो तो दुनिया और भी खूबसूरत लगती है।","category":"love","createdAt":1705890000000,"updatedAt":1705890000000},
+  {"id":"love_028","text":"In your smile I find my peace.","category":"love","createdAt":1705880000000,"updatedAt":1705880000000},
+  {"id":"love_029","text":"तुमसे मिलना मेरी जिंदगी की सबसे प्यारी कहानी है।","category":"love","createdAt":1705870000000,"updatedAt":1705870000000},
+  {"id":"love_030","text":"Love grows stronger when hearts trust each other.","category":"love","createdAt":1705860000000,"updatedAt":1705860000000},
+
+  {"id":"sad_026","text":"कभी कभी सबसे गहरा दर्द बिना आवाज़ के होता है।","category":"sad","createdAt":1705850000000,"updatedAt":1705850000000},
+  {"id":"sad_027","text":"दिल टूटने के बाद इंसान पहले जैसा नहीं रहता।","category":"sad","createdAt":1705840000000,"updatedAt":1705840000000},
+  {"id":"sad_028","text":"Some memories never fade.","category":"sad","createdAt":1705830000000,"updatedAt":1705830000000},
+  {"id":"sad_029","text":"अधूरी मोहब्बतें अक्सर ज्यादा याद आती हैं।","category":"sad","createdAt":1705820000000,"updatedAt":1705820000000},
+  {"id":"sad_030","text":"Pain teaches lessons happiness never can.","category":"sad","createdAt":1705810000000,"updatedAt":1705810000000},
+
+  {"id":"motivation_026","text":"हर संघर्ष आपको और मजबूत बनाता है।","category":"motivation","createdAt":1705800000000,"updatedAt":1705800000000},
+  {"id":"motivation_027","text":"Success begins where excuses end.","category":"motivation","createdAt":1705790000000,"updatedAt":1705790000000},
+  {"id":"motivation_028","text":"जो मेहनत करता है वही चमकता है।","category":"motivation","createdAt":1705780000000,"updatedAt":1705780000000},
+  {"id":"motivation_029","text":"Stay focused and never give up.","category":"motivation","createdAt":1705770000000,"updatedAt":1705770000000},
+  {"id":"motivation_030","text":"हर छोटी जीत आपको बड़ी सफलता के करीब ले जाती है।","category":"motivation","createdAt":1705760000000,"updatedAt":1705760000000},
+
+  {"id":"friendship_026","text":"दोस्त वो होते हैं जो मुश्किल समय में भी साथ रहें।","category":"friendship","createdAt":1705750000000,"updatedAt":1705750000000},
+  {"id":"friendship_027","text":"A good friend knows all your stories.","category":"friendship","createdAt":1705740000000,"updatedAt":1705740000000},
+  {"id":"friendship_028","text":"सच्ची दोस्ती वक्त के साथ और मजबूत होती है।","category":"friendship","createdAt":1705730000000,"updatedAt":1705730000000},
+  {"id":"friendship_029","text":"Friendship is the sweetest connection of hearts.","category":"friendship","createdAt":1705720000000,"updatedAt":1705720000000},
+  {"id":"friendship_030","text":"दोस्तों के साथ बिताया हर पल यादगार होता है।","category":"friendship","createdAt":1705710000000,"updatedAt":1705710000000},
+
+  {"id":"gita_021","text":"मनुष्य अपने कर्मों से ही महान बनता है।","category":"gita","createdAt":1705700000000,"updatedAt":1705700000000},
+  {"id":"gita_022","text":"सच्ची शांति भीतर से आती है।","category":"gita","createdAt":1705690000000,"updatedAt":1705690000000},
+  {"id":"gita_023","text":"धैर्य और संयम सफलता की कुंजी हैं।","category":"gita","createdAt":1705680000000,"updatedAt":1705680000000},
+  {"id":"gita_024","text":"जो स्वयं को समझ लेता है वही सच्चा ज्ञानी है।","category":"gita","createdAt":1705670000000,"updatedAt":1705670000000},
+  {"id":"gita_025","text":"आत्मा अजर और अमर है।","category":"gita","createdAt":1705660000000,"updatedAt":1705660000000},
+
+  {"id":"quotes_021","text":"Success is built on daily discipline.","category":"quotes","createdAt":1705650000000,"updatedAt":1705650000000},
+  {"id":"quotes_022","text":"Positive thoughts create positive life.","category":"quotes","createdAt":1705640000000,"updatedAt":1705640000000},
+  {"id":"quotes_023","text":"Dreams don’t work unless you do.","category":"quotes","createdAt":1705630000000,"updatedAt":1705630000000},
+  {"id":"quotes_024","text":"Happiness is a choice you make every day.","category":"quotes","createdAt":1705620000000,"updatedAt":1705620000000},
+  {"id":"quotes_025","text":"Believe in the power of consistency.","category":"quotes","createdAt":1705610000000,"updatedAt":1705610000000},
+
+  {"id":"love_031","text":"तेरे साथ बिताया हर पल यादों में चमकता रहता है।","category":"love","createdAt":1705600000000,"updatedAt":1705600000000},
+  {"id":"love_032","text":"तुम्हारी हँसी मेरी सबसे बड़ी खुशी है।","category":"love","createdAt":1705590000000,"updatedAt":1705590000000},
+  {"id":"love_033","text":"Love is when two hearts understand without words.","category":"love","createdAt":1705580000000,"updatedAt":1705580000000},
+  {"id":"love_034","text":"तुम्हारा नाम लेते ही दिल मुस्कुरा उठता है।","category":"love","createdAt":1705570000000,"updatedAt":1705570000000},
+  {"id":"love_035","text":"Your presence makes every moment magical.","category":"love","createdAt":1705560000000,"updatedAt":1705560000000},
+
+  {"id":"sad_031","text":"कुछ रिश्ते समय के साथ यादों में बदल जाते हैं।","category":"sad","createdAt":1705550000000,"updatedAt":1705550000000},
+  {"id":"sad_032","text":"दिल के दर्द को समझना आसान नहीं होता।","category":"sad","createdAt":1705540000000,"updatedAt":1705540000000},
+  {"id":"sad_033","text":"Sometimes the deepest pain is hidden behind a smile.","category":"sad","createdAt":1705530000000,"updatedAt":1705530000000},
+  {"id":"sad_034","text":"जो चले जाते हैं वो यादों में रह जाते हैं।","category":"sad","createdAt":1705520000000,"updatedAt":1705520000000},
+  {"id":"sad_035","text":"Broken trust hurts more than broken hearts.","category":"sad","createdAt":1705510000000,"updatedAt":1705510000000},
+
+  {"id":"motivation_031","text":"हर असफलता एक नई सीख लेकर आती है।","category":"motivation","createdAt":1705500000000,"updatedAt":1705500000000},
+  {"id":"motivation_032","text":"Success is built with patience and persistence.","category":"motivation","createdAt":1705490000000,"updatedAt":1705490000000},
+  {"id":"motivation_033","text":"जो खुद पर भरोसा करता है वही आगे बढ़ता है।","category":"motivation","createdAt":1705480000000,"updatedAt":1705480000000},
+  {"id":"motivation_034","text":"Stay hungry, stay determined.","category":"motivation","createdAt":1705470000000,"updatedAt":1705470000000},
+  {"id":"motivation_035","text":"हर दिन थोड़ा बेहतर बनने की कोशिश करो।","category":"motivation","createdAt":1705460000000,"updatedAt":1705460000000},
+
+  {"id":"friendship_031","text":"दोस्ती वो रिश्ता है जो दिलों को जोड़ता है।","category":"friendship","createdAt":1705450000000,"updatedAt":1705450000000},
+  {"id":"friendship_032","text":"True friends stay even when the world leaves.","category":"friendship","createdAt":1705440000000,"updatedAt":1705440000000},
+  {"id":"friendship_033","text":"दोस्तों के साथ बिताया समय सबसे कीमती होता है।","category":"friendship","createdAt":1705430000000,"updatedAt":1705430000000},
+  {"id":"friendship_034","text":"Friendship is built on trust and laughter.","category":"friendship","createdAt":1705420000000,"updatedAt":1705420000000},
+  {"id":"friendship_035","text":"सच्चे दोस्त जीवन को आसान बना देते हैं।","category":"friendship","createdAt":1705410000000,"updatedAt":1705410000000},
+
+  {"id":"gita_026","text":"सच्चा ज्ञान भीतर की शांति से आता है।","category":"gita","createdAt":1705400000000,"updatedAt":1705400000000},
+  {"id":"gita_027","text":"कर्म ही मनुष्य की पहचान है।","category":"gita","createdAt":1705390000000,"updatedAt":1705390000000},
+  {"id":"gita_028","text":"जो अपने मन को जीत लेता है वही महान है।","category":"gita","createdAt":1705380000000,"updatedAt":1705380000000},
+  {"id":"gita_029","text":"आत्मा शाश्वत है और कभी नष्ट नहीं होती।","category":"gita","createdAt":1705370000000,"updatedAt":1705370000000},
+  {"id":"gita_030","text":"संतुलन ही जीवन का असली योग है।","category":"gita","createdAt":1705360000000,"updatedAt":1705360000000},
+
+  {"id":"quotes_026","text":"Discipline is the bridge between goals and success.","category":"quotes","createdAt":1705350000000,"updatedAt":1705350000000},
+  {"id":"quotes_027","text":"Focus on what matters most.","category":"quotes","createdAt":1705340000000,"updatedAt":1705340000000},
+  {"id":"quotes_028","text":"Your mindset shapes your destiny.","category":"quotes","createdAt":1705330000000,"updatedAt":1705330000000},
+  {"id":"quotes_029","text":"Every day is another chance to grow.","category":"quotes","createdAt":1705320000000,"updatedAt":1705320000000},
+  {"id":"quotes_030","text":"Great things take patience and persistence.","category":"quotes","createdAt":1705310000000,"updatedAt":1705310000000}
+
 ]

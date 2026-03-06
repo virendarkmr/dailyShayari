@@ -62,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.dailyshayari.data.Shayari
 import com.dailyshayari.di.FirebaseModule
 import com.dailyshayari.ui.components.AppWatermark
@@ -170,14 +172,7 @@ private const val TODAYS_SPECIAL_CAPTURE_DELAY_MS = 400L
 @Composable
 fun TodaysSpecial(shayaris: List<Shayari>, viewModel: HomeViewModel) {
     val context = LocalContext.current
-    val images = remember {
-        val allImageIds = (1..19).map { context.resources.getIdentifier("bg_$it", "drawable", context.packageName) }.filter { it != 0 }
-        val calendar = Calendar.getInstance()
-        val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
-        val year = calendar.get(Calendar.YEAR)
-        val seed = year * 1000 + dayOfYear
-        allImageIds.shuffled(Random(seed)).take(10)
-    }
+    val randomMax by viewModel.randomMax.collectAsState(initial = 10)
 
     val pageCount = if (shayaris.isNotEmpty()) shayaris.size else 1
     val pagerState = rememberPagerState(pageCount = { pageCount })
@@ -196,6 +191,10 @@ fun TodaysSpecial(shayaris: List<Shayari>, viewModel: HomeViewModel) {
             val captureController = rememberCaptureController()
             var isCapturing by remember { mutableStateOf(false) }
 
+            val imageUrl = remember(shayari, randomMax) {
+                if (shayari != null) viewModel.getImageUrl(shayari, randomMax) else null
+            }
+
             Column(
                 modifier = Modifier
                     .width(itemWidth)
@@ -211,13 +210,12 @@ fun TodaysSpecial(shayaris: List<Shayari>, viewModel: HomeViewModel) {
                 ) {
                     // Box containing both image content and action row inside Capturable
                     Box(modifier = Modifier.fillMaxWidth()) {
-                        val imageResId = images.getOrElse(page % images.size) { R.drawable.bg_1 }
                         TodaysSpecialContent(
                             shayari = shayari,
-                            imageResId = imageResId
+                            imageUrl = imageUrl
                         )
                         // ActionRow overlaid on top of image, transparent during capture
-                        if (shayari != null) {
+                        if (shayari != null && imageUrl != null) {
                             TodaysSpecialActionRow(
                                 shayari = shayari,
                                 onShareClick = {
@@ -229,8 +227,7 @@ fun TodaysSpecial(shayaris: List<Shayari>, viewModel: HomeViewModel) {
                                     }
                                 },
                                 onFavoriteClick = {
-                                    val imageName = context.resources.getResourceEntryName(imageResId)
-                                    viewModel.toggleFavorite(shayari, imageName)
+                                    viewModel.toggleFavorite(shayari, imageUrl)
                                 },
                                 isFavoriteFlow = viewModel.isFavorite(shayari.id),
                                 modifier = Modifier
@@ -270,7 +267,7 @@ fun TodaysSpecial(shayaris: List<Shayari>, viewModel: HomeViewModel) {
 }
 
 @Composable
-fun TodaysSpecialContent(shayari: Shayari?, imageResId: Int) {
+fun TodaysSpecialContent(shayari: Shayari?, imageUrl: String?) {
     Box(
         modifier = Modifier
             .height(300.dp)
@@ -284,7 +281,12 @@ fun TodaysSpecialContent(shayari: Shayari?, imageResId: Int) {
         )
 
         AsyncImage(
-            model = imageResId,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl)
+                .crossfade(true)
+                .diskCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),

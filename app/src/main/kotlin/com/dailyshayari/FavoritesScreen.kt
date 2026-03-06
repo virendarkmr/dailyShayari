@@ -1,3 +1,4 @@
+
 @file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 
 package com.dailyshayari
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.dailyshayari.db.FavoriteShayariEntity
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
@@ -60,6 +64,7 @@ import com.dailyshayari.viewmodel.FavoritesViewModel
 import dev.shreyaspatil.capturable.Capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 private val colorPalettes = listOf(
@@ -74,7 +79,7 @@ private val colorPalettes = listOf(
 fun FavoritesScreen(onBackClick: () -> Unit) {
     val context = LocalContext.current
     val viewModel: FavoritesViewModel = viewModel(factory = ViewModelFactory(context))
-    val favorites by viewModel.favorites.collectAsState()
+    val favorites by viewModel.favorites.collectAsState(initial = emptyList())
 
     val fullCaptureController = rememberCaptureController()
     var captureTarget by remember { mutableStateOf<FavoriteShayariEntity?>(null) }
@@ -99,14 +104,14 @@ fun FavoritesScreen(onBackClick: () -> Unit) {
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             if (favorites.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("No favorites yet.", color = softWhite)
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(24.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
@@ -149,7 +154,7 @@ fun FavoriteShayariCard(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val captureController = rememberCaptureController()
-    val isImageCard = favorite.imageName != "none"
+    val isImageCard = favorite.imageUrl != "none"
 
     if (isImageCard) {
         Box(modifier = Modifier.fillMaxWidth().shadow(4.dp, RoundedCornerShape(24.dp)).clip(RoundedCornerShape(24.dp))) {
@@ -181,7 +186,7 @@ fun FavoriteShayariCard(
                 FavoriteTextCardContent(favorite = favorite, modifier = cardModifier)
             }
             Column(modifier = Modifier.fillMaxWidth().then(cardModifier)) {
-                Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
                 ActionRow(
                     shayari = ShayariEntity(favorite.id, favorite.text, favorite.category, 0, 0),
                     onShareClick = { coroutineScope.launch { captureController.capture() } },
@@ -215,12 +220,14 @@ fun FavoriteTextCardContent(favorite: FavoriteShayariEntity, modifier: Modifier 
 
 @Composable
 fun FavoriteImageCardContent(favorite: FavoriteShayariEntity) {
-    val context = LocalContext.current
-    val imageResId = context.resources.getIdentifier(favorite.imageName, "drawable", context.packageName)
-
     Box(modifier = Modifier.fillMaxWidth().aspectRatio(3f / 4f)) {
         AsyncImage(
-            model = if (imageResId != 0) imageResId else R.drawable.bg_1,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(favorite.imageUrl)
+                .crossfade(true)
+                .diskCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
