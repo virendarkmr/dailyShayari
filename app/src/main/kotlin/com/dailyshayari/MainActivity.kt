@@ -43,6 +43,7 @@ sealed class Screen {
     object Settings : Screen()
     object Favorites : Screen()
     object Search : Screen()
+    object GoodMorning : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -80,8 +81,14 @@ fun MainScreen() {
 
     // Handle back button press
     BackHandler {
-        if (currentScreen is Screen.Favorites || currentScreen is Screen.Search) {
-            currentScreen = Screen.Settings
+        if (currentScreen is Screen.Favorites || currentScreen is Screen.Search || currentScreen is Screen.GoodMorning) {
+            currentScreen = Screen.Home // Return to Home for GoodMorning, or Settings for others? 
+            // Better logic: if GoodMorning was opened from Home, go back to Home.
+            if (currentScreen is Screen.GoodMorning) {
+                currentScreen = Screen.Home
+            } else {
+                currentScreen = Screen.Settings
+            }
         } else if (pagerState.currentPage != 0) {
             coroutineScope.launch {
                 pagerState.animateScrollToPage(0)
@@ -102,7 +109,11 @@ fun MainScreen() {
     Box(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(state = pagerState) { page ->
             when (val screen = screens[page]) {
-                is Screen.Home -> HomeScreen(pagerState, onNavigate)
+                is Screen.Home -> HomeScreen(
+                    pagerState = pagerState, 
+                    onNavigate = onNavigate,
+                    onGoodMorningClick = { currentScreen = Screen.GoodMorning }
+                )
                 is Screen.Explore -> ExploreScreen(pagerState, onNavigate, initialCategory = selectedCategory.value)
                 is Screen.Create -> CreateScreen(onBackClick = { onNavigate(0, null) })
                 is Screen.Settings -> SettingsScreen(
@@ -110,8 +121,7 @@ fun MainScreen() {
                     onFavoritesClick = { currentScreen = Screen.Favorites },
                     onSearchClick = { currentScreen = Screen.Search }
                 )
-                is Screen.Favorites -> {} 
-                is Screen.Search -> {}
+                else -> {}
             }
         }
 
@@ -121,6 +131,14 @@ fun MainScreen() {
         
         if (currentScreen is Screen.Search) {
             SearchScreen(onBackClick = { currentScreen = Screen.Settings })
+        }
+
+        if (currentScreen is Screen.GoodMorning) {
+            GoodMorningScreen(
+                pagerState = pagerState,
+                onNavigate = onNavigate,
+                onBackClick = { currentScreen = Screen.Home }
+            )
         }
     }
 }

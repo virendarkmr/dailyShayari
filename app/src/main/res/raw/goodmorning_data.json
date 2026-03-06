@@ -1,0 +1,65 @@
+{
+  "weekday_blessings": {
+    "monday": {
+      "god": "Shiva",
+      "text": "हर हर महादेव 🙏 भोलेनाथ की कृपा से आपका दिन मंगलमय हो।"
+    },
+    "tuesday": {
+      "god": "Hanuman",
+      "text": "हनुमान जी की कृपा आप पर बनी रहे। आपका दिन शक्ति और साहस से भरा हो।"
+    },
+    "wednesday": {
+      "god": "Ganesha",
+      "text": "गणेश जी का आशीर्वाद आपके जीवन से सभी विघ्न दूर करे। आपका दिन शुभ हो।"
+    },
+    "thursday": {
+      "god": "Vishnu",
+      "text": "श्री विष्णु भगवान का आशीर्वाद हमेशा आपके साथ रहे।"
+    },
+    "friday": {
+      "god": "Lakshmi",
+      "text": "माँ लक्ष्मी की कृपा आपके घर में सुख, शांति और समृद्धि लाए।"
+    },
+    "saturday": {
+      "god": "Shani",
+      "text": "शनि देव की कृपा से आपका दिन मंगलमय हो। सभी कष्ट दूर हों।"
+    },
+    "sunday": {
+      "god": "Surya",
+      "text": "सूर्य देव का प्रकाश आपके जीवन को ऊर्जा और सफलता से भर दे।"
+    }
+  },
+
+  "messages": [
+    "सुप्रभात 🌸 आपका दिन खुशियों से भरा हो।",
+    "Good Morning ☀️ May your day be peaceful and bright.",
+    "हर नई सुबह एक नई उम्मीद लेकर आती है।",
+    "Good Morning! Start your day with a grateful heart.",
+    "सुप्रभात 🙏 आपका दिन शुभ हो।",
+    "Rise and shine! A beautiful day awaits you.",
+    "हर सुबह एक नया अवसर है।",
+    "Good Morning 🌼 Stay positive and smile.",
+    "सुबह की शुरुआत मुस्कान से करें।",
+    "Have a wonderful morning and a great day ahead.",
+    "सुप्रभात 🌺 आज का दिन सफलता से भरा हो।",
+    "Good Morning! Let positivity guide your day.",
+    "हर सुबह नई रोशनी लाती है।",
+    "Wake up with determination and go to bed with satisfaction.",
+    "सुप्रभात 🌞 आपका दिन मंगलमय हो।",
+    "Good Morning! Spread love and kindness today.",
+    "जीवन की सबसे खूबसूरत शुरुआत एक नई सुबह है।",
+    "Start your morning with hope and faith.",
+    "सुप्रभात 🌸 हर दिन नई शुरुआत है।",
+    "Rise, smile, and shine.",
+    "आज का दिन आपके लिए नई खुशियाँ लाए।",
+    "Good Morning! Let your smile change the world.",
+    "सुप्रभात 🌞 जीवन को सकारात्मक बनाएं।",
+    "Start your day with gratitude.",
+    "हर सुबह नई ऊर्जा लेकर आती है।",
+    "Good Morning 🌼 Make today amazing.",
+    "सुप्रभात 🙏 भगवान आपका दिन शुभ करे।",
+    "A beautiful morning begins with a positive mindset.",
+    "हर सुबह एक नई कहानी की शुरुआत है।",
+    "Good Morning! Believe something wonderful will happen today."
+  ]
+}

@@ -81,7 +81,7 @@ import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit) {
+fun HomeScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, onGoodMorningClick: () -> Unit = {}) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(context, FirebaseModule.provideFirestore())
@@ -128,7 +128,7 @@ fun HomeScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit) {
                 style = MaterialTheme.typography.headlineMedium,
                 color = luxuryText.appTitle
             )
-            ShayariCard("Good Morning", "")
+            ShayariCard("Good Morning", "Brighten someone's day", onClick = onGoodMorningClick)
             ShayariCard("Festival Greetings", "")
 
             Text(
@@ -430,7 +430,7 @@ fun AutoSizeText(
 }
 
 @Composable
-fun ShayariCard(title: String, subtitle: String) {
+fun ShayariCard(title: String, subtitle: String, onClick: () -> Unit = {}) {
     val luxuryText = LocalLuxuryTextColors.current
 
     val cardSurfaceGradient = Brush.verticalGradient(colors = listOf(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), Color.Black))
@@ -446,6 +446,7 @@ fun ShayariCard(title: String, subtitle: String) {
                 brush = Brush.verticalGradient(colors = listOf(GoldPrimary.copy(alpha = 0.2f), GoldPrimary.copy(alpha = 0.05f))),
                 shape = RoundedCornerShape(28.dp)
             )
+            .clickable(onClick = onClick)
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {

@@ -32,6 +32,7 @@ class ExploreViewModel(
 
     val gitaMax = userPreferencesRepository.gitaMax
     val randomMax = userPreferencesRepository.randomMax
+    val goodMorningMax = userPreferencesRepository.goodMorningMax
 
     init {
         viewModelScope.launch {
@@ -51,14 +52,18 @@ class ExploreViewModel(
 
     fun isFavorite(id: String): Flow<Boolean> = shayariRepository.isFavorite(id)
 
-    fun getImageUrl(shayari: ShayariEntity, gitaMax: Int, randomMax: Int): String {
+    fun getImageUrl(shayari: ShayariEntity, gitaMax: Int, randomMax: Int, goodMorningMax: Int, forceRandom: Boolean = false): String {
         val category = shayari.category.lowercase()
-        val isGita = category == "gita" || category == "gita lines"
         
-        val maxImages = if (isGita) gitaMax else randomMax
-        val folder = if (isGita) "gita" else "random"
+        val (folder, maxImages) = when {
+            category == "gita" || category == "gita lines" -> "gita" to gitaMax
+            !forceRandom && category == "good morning" -> "good morning" to goodMorningMax
+            else -> "random" to randomMax
+        }
+        
         val imageIndex = (abs(shayari.id.hashCode()) % maxImages) + 1
+        val encodedFolder = folder.replace(" ", "%20")
         
-        return "${FirebaseModule.firebaseStorageBaseUrl}/${folder}%2F${imageIndex}.webp?alt=media"
+        return "${FirebaseModule.firebaseStorageBaseUrl}/${encodedFolder}%2F${imageIndex}.webp?alt=media"
     }
 }

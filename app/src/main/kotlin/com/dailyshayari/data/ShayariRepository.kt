@@ -33,6 +33,7 @@ class ShayariRepository(
     private fun mapCategory(category: String?): String? {
         return when (category) {
             "Gita Lines" -> "gita"
+            "Good Morning" -> "good_morning"
             "All" -> null
             null -> null
             else -> category.lowercase()
@@ -106,7 +107,8 @@ class ShayariRepository(
                 if (fetched || lastFetch == 0L) {
                     val gitaMax = remoteConfig.getLong("gita_max").toInt().coerceAtLeast(1)
                     val randomMax = remoteConfig.getLong("random_max").toInt().coerceAtLeast(1)
-                    userPreferencesRepository.updateConfig(gitaMax, randomMax, currentTime)
+                    val gmMax = remoteConfig.getLong("good_morning_max").toInt().coerceAtLeast(1)
+                    userPreferencesRepository.updateConfig(gitaMax, randomMax, gmMax, currentTime)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -116,15 +118,13 @@ class ShayariRepository(
 
     suspend fun getImageUrl(shayari: ShayariEntity): String {
         val category = mapCategory(shayari.category)
-        val isGita = category == "gita"
         
-        val maxImages = if (isGita) {
-            userPreferencesRepository.gitaMax.first()
-        } else {
-            userPreferencesRepository.randomMax.first()
+        val (folder, maxImages) = when (category) {
+            "gita" -> "gita" to userPreferencesRepository.gitaMax.first()
+            "good_morning" -> "good_morning" to userPreferencesRepository.goodMorningMax.first()
+            else -> "random" to userPreferencesRepository.randomMax.first()
         }
         
-        val folder = if (isGita) "gita" else "random"
         val imageIndex = (shayari.id.hashCode().absoluteValue % maxImages) + 1
         
         // Construct the Firebase Storage download URL

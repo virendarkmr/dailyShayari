@@ -271,9 +271,10 @@ fun ShayariCard(shayari: ShayariEntity, onRequestFullCapture: (ShayariEntity, St
 
     val gitaMax by viewModel.gitaMax.collectAsState(initial = 5)
     val randomMax by viewModel.randomMax.collectAsState(initial = 10)
+    val goodMorningMax by viewModel.goodMorningMax.collectAsState(initial = 5)
     
-    val imageUrl = remember(shayari.id, gitaMax, randomMax) { 
-        viewModel.getImageUrl(shayari, gitaMax, randomMax) 
+    val imageUrl = remember(shayari.id, gitaMax, randomMax, goodMorningMax) { 
+        viewModel.getImageUrl(shayari, gitaMax, randomMax, goodMorningMax, forceRandom = true) 
     }
 
     if (isImageCard) {
@@ -346,7 +347,7 @@ fun TextCardContent(shayari: ShayariEntity, palette: List<Color>, modifier: Modi
 
 @Composable
 fun ImageCardContent(shayari: ShayariEntity, imageUrl: String?) {
-    Box(modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f)) { // Changed from 3f/4f to 2f/3f
+    Box(modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f)) { 
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(imageUrl)
