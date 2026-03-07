@@ -108,7 +108,8 @@ class ShayariRepository(
                     val gitaMax = remoteConfig.getLong("gita_max").toInt().coerceAtLeast(1)
                     val randomMax = remoteConfig.getLong("random_max").toInt().coerceAtLeast(1)
                     val gmMax = remoteConfig.getLong("good_morning_max").toInt().coerceAtLeast(1)
-                    userPreferencesRepository.updateConfig(gitaMax, randomMax, gmMax, currentTime)
+                    val wdMax = remoteConfig.getLong("weekday_max").toInt().coerceAtLeast(1)
+                    userPreferencesRepository.updateConfig(gitaMax, randomMax, gmMax, wdMax, currentTime)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -128,7 +129,6 @@ class ShayariRepository(
         val imageIndex = (shayari.id.hashCode().absoluteValue % maxImages) + 1
         
         // Construct the Firebase Storage download URL
-        // Format: https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<folder>%2F<name>?alt=media
         return "${FirebaseModule.firebaseStorageBaseUrl}/${folder}%2F${imageIndex}.webp?alt=media"
     }
 }

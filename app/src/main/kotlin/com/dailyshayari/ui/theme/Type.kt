@@ -21,6 +21,14 @@ val NotoSansDevanagariFontFamily = FontFamily(
     Font(R.font.notosansdevanagari_variable, FontWeight.Normal)
 )
 
+val GreatVibesFontFamily = FontFamily(
+    Font(R.font.greatvibes_regular, FontWeight.Normal)
+)
+
+val CinzelFontFamily = FontFamily(
+    Font(R.font.cinzel_variablefont_wght, FontWeight.Normal)
+)
+
 
 val Typography = Typography(
     // 1) App Title

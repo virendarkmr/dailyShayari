@@ -33,6 +33,7 @@ class ExploreViewModel(
     val gitaMax = userPreferencesRepository.gitaMax
     val randomMax = userPreferencesRepository.randomMax
     val goodMorningMax = userPreferencesRepository.goodMorningMax
+    val weekdayMax = userPreferencesRepository.weekdayMax
 
     init {
         viewModelScope.launch {
@@ -57,7 +58,7 @@ class ExploreViewModel(
         
         val (folder, maxImages) = when {
             category == "gita" || category == "gita lines" -> "gita" to gitaMax
-            !forceRandom && category == "good morning" -> "good morning" to goodMorningMax
+            !forceRandom && (category == "good morning" || category == "good_morning") -> "good_morning" to goodMorningMax
             else -> "random" to randomMax
         }
         
