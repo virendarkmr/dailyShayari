@@ -72,8 +72,8 @@ import com.dailyshayari.util.copyTextToClipboard
 import com.dailyshayari.util.isHindi
 import com.dailyshayari.viewmodel.HomeViewModel
 import com.dailyshayari.viewmodel.HomeViewModelFactory
-import dev.shreyaspatil.capturable.Capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import dev.shreyaspatil.capturable.Capturable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -81,7 +81,12 @@ import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, onGoodMorningClick: () -> Unit = {}) {
+fun HomeScreen(
+    pagerState: PagerState, 
+    onNavigate: (Int, String?) -> Unit, 
+    onGoodMorningClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {}
+) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(context, FirebaseModule.provideFirestore())
@@ -94,6 +99,15 @@ fun HomeScreen(pagerState: PagerState, onNavigate: (Int, String?) -> Unit, onGoo
             TopAppBar(
                 title = { Text("Shayari Vibes", style = MaterialTheme.typography.headlineLarge, color = luxuryText.appTitle) },
                 navigationIcon = { AppLogo() },
+                actions = {
+                    IconButton(onClick = onNotificationClick) {
+                        Icon(
+                            imageVector = Icons.Rounded.Notifications,
+                            contentDescription = "Notifications",
+                            tint = luxuryText.appTitle
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },

@@ -89,4 +89,7 @@ dependencies {
 
     // Capturable
     implementation("dev.shreyaspatil:capturable:1.0.3")
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 }

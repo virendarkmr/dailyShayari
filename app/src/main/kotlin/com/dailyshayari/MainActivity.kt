@@ -44,6 +44,7 @@ sealed class Screen {
     object Favorites : Screen()
     object Search : Screen()
     object GoodMorning : Screen()
+    object Notifications : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -81,10 +82,8 @@ fun MainScreen() {
 
     // Handle back button press
     BackHandler {
-        if (currentScreen is Screen.Favorites || currentScreen is Screen.Search || currentScreen is Screen.GoodMorning) {
-            currentScreen = Screen.Home // Return to Home for GoodMorning, or Settings for others? 
-            // Better logic: if GoodMorning was opened from Home, go back to Home.
-            if (currentScreen is Screen.GoodMorning) {
+        if (currentScreen is Screen.Favorites || currentScreen is Screen.Search || currentScreen is Screen.GoodMorning || currentScreen is Screen.Notifications) {
+            if (currentScreen is Screen.GoodMorning || currentScreen is Screen.Notifications) {
                 currentScreen = Screen.Home
             } else {
                 currentScreen = Screen.Settings
@@ -112,7 +111,8 @@ fun MainScreen() {
                 is Screen.Home -> HomeScreen(
                     pagerState = pagerState, 
                     onNavigate = onNavigate,
-                    onGoodMorningClick = { currentScreen = Screen.GoodMorning }
+                    onGoodMorningClick = { currentScreen = Screen.GoodMorning },
+                    onNotificationClick = { currentScreen = Screen.Notifications }
                 )
                 is Screen.Explore -> ExploreScreen(pagerState, onNavigate, initialCategory = selectedCategory.value)
                 is Screen.Create -> CreateScreen(onBackClick = { onNavigate(0, null) })
@@ -139,6 +139,10 @@ fun MainScreen() {
                 onNavigate = onNavigate,
                 onBackClick = { currentScreen = Screen.Home }
             )
+        }
+
+        if (currentScreen is Screen.Notifications) {
+            NotificationScreen(onBackClick = { currentScreen = Screen.Home })
         }
     }
 }
