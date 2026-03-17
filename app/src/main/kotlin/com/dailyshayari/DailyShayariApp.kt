@@ -2,6 +2,7 @@ package com.dailyshayari
 
 import android.app.Application
 import androidx.work.*
+import com.google.android.gms.ads.MobileAds
 import com.dailyshayari.worker.ShayariNotificationWorker
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -10,6 +11,10 @@ class DailyShayariApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        
+        // Initialize AdMob
+        MobileAds.initialize(this) {}
+        
         scheduleDailyNotification()
         
         // TEST: Trigger a notification 5 seconds after app start

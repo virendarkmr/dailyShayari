@@ -66,6 +66,7 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.dailyshayari.data.Shayari
 import com.dailyshayari.di.FirebaseModule
+import com.dailyshayari.ui.components.AdBanner
 import com.dailyshayari.ui.components.AppWatermark
 import com.dailyshayari.ui.theme.*
 import com.dailyshayari.util.copyTextToClipboard
@@ -128,7 +129,12 @@ fun HomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
-        bottomBar = { AppBottomBar(pagerState = pagerState, onNavigate = onNavigate) }
+        bottomBar = { 
+            Column {
+                AdBanner()
+                AppBottomBar(pagerState = pagerState, onNavigate = onNavigate) 
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -171,6 +177,8 @@ fun HomeScreen(
                 // Navigate to Explore screen (index 1) with category filter
                 onNavigate(1, category)
             })
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

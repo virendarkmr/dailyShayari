@@ -92,4 +92,7 @@ dependencies {
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+
+    // AdMob
+    implementation("com.google.android.gms:play-services-ads:23.6.0")
 }
