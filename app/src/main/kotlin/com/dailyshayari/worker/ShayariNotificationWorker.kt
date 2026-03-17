@@ -10,7 +10,8 @@ import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.dailyshayari.MainActivity
-import com.dailyshayari.R
+import com.dailyshayari.data.Notification
+import com.dailyshayari.db.ShayariDatabase
 
 class ShayariNotificationWorker(
     context: Context,
@@ -18,11 +19,30 @@ class ShayariNotificationWorker(
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        showNotification()
+        val title = "Daily Shayari"
+        val message = "New shayari has been uploaded, please enjoy."
+        
+        // Save to database so it appears in the Notification Screen
+        saveNotificationToDb(title, message)
+        
+        // Show system notification
+        showNotification(title, message)
+        
         return Result.success()
     }
 
-    private fun showNotification() {
+    private suspend fun saveNotificationToDb(title: String, message: String) {
+        val database = ShayariDatabase.getDatabase(applicationContext)
+        val notification = Notification(
+            title = title,
+            message = message,
+            timestamp = System.currentTimeMillis(),
+            isRead = false
+        )
+        database.notificationDao().insert(notification)
+    }
+
+    private fun showNotification(title: String, message: String) {
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "daily_shayari_channel"
 
@@ -48,9 +68,9 @@ class ShayariNotificationWorker(
         )
 
         val notification = NotificationCompat.Builder(applicationContext, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with your app icon
-            .setContentTitle("Daily Shayari")
-            .setContentText("New shayari has been uploaded, please enjoy.")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(title)
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

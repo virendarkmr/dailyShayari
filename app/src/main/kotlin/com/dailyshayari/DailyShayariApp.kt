@@ -11,6 +11,17 @@ class DailyShayariApp : Application() {
     override fun onCreate() {
         super.onCreate()
         scheduleDailyNotification()
+        
+        // TEST: Trigger a notification 5 seconds after app start
+        triggerTestNotification()
+    }
+
+    private fun triggerTestNotification() {
+        val workManager = WorkManager.getInstance(this)
+        val testWorkRequest = OneTimeWorkRequestBuilder<ShayariNotificationWorker>()
+            .setInitialDelay(5, TimeUnit.SECONDS)
+            .build()
+        workManager.enqueue(testWorkRequest)
     }
 
     private fun scheduleDailyNotification() {
