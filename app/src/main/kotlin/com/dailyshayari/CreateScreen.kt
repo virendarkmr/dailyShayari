@@ -1,6 +1,6 @@
 package com.dailyshayari
 
-import android.net.Uri
+import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,21 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -32,40 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.AddPhotoAlternate
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.FormatColorText
-import androidx.compose.material.icons.rounded.FormatSize
-import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -90,11 +46,11 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.dailyshayari.R
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.di.FirebaseModule
 import com.dailyshayari.ui.components.AppWatermark
 import com.dailyshayari.ui.components.CategoryChips
+import com.dailyshayari.ui.components.RewardAdManager
 import com.dailyshayari.ui.explore.ExploreViewModel
 import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
@@ -183,6 +139,37 @@ fun CreateScreen(
     var captureAction by remember { mutableStateOf<CaptureAction?>(null) }
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 
+    // Reward Ad Logic
+    val rewardAdManager = remember { RewardAdManager(context) }
+    var showAdDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        rewardAdManager.loadAd()
+    }
+
+    if (showAdDialog) {
+        AlertDialog(
+            onDismissRequest = { showAdDialog = false },
+            title = { Text("Support Us") },
+            text = { Text("Please watch a short video to create your image. This helps keep the app free!") },
+            confirmButton = {
+                Button(onClick = {
+                    showAdDialog = false
+                    rewardAdManager.showAd(context as Activity) {
+                        coroutineScope.launch { captureController.capture() }
+                    }
+                }) {
+                    Text("Watch Ad")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAdDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     BottomSheetScaffold(
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
@@ -223,13 +210,21 @@ fun CreateScreen(
                     }
                     IconButton(onClick = {
                         captureAction = CaptureAction.SHARE
-                        coroutineScope.launch { captureController.capture() }
+                        if (rewardAdManager.isRewardActive()) {
+                            coroutineScope.launch { captureController.capture() }
+                        } else {
+                            showAdDialog = true
+                        }
                     }) {
                         Icon(Icons.Rounded.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = {
                         captureAction = CaptureAction.DOWNLOAD
-                        coroutineScope.launch { captureController.capture() }
+                        if (rewardAdManager.isRewardActive()) {
+                            coroutineScope.launch { captureController.capture() }
+                        } else {
+                            showAdDialog = true
+                        }
                     }) {
                         Icon(Icons.Rounded.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.primary)
                     }
@@ -411,8 +406,8 @@ fun EditorActionBar(
     onFontSizeChanged: (Float) -> Unit,
     onFontFamilySelected: (FontFamily) -> Unit
 ) {
-    var mainTab by remember { mutableStateOf(0) } // 0 for Background, 1 for Text
-    var textSubTab by remember { mutableStateOf(0) } // 0 for Library, 1 for Style
+    var mainTab by remember { mutableIntStateOf(0) } // 0 for Background, 1 for Text
+    var textSubTab by remember { mutableIntStateOf(0) } // 0 for Library, 1 for Style
     val viewModel: ExploreViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))
 
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
@@ -440,7 +435,7 @@ fun EditorActionBar(
         Color(0xFF795548), Color(0xFF9E9E9E), Color(0xFF607D8B),
         Color(0xFFFFD700), Color(0xFFC0C0C0), Color(0xFFCD7F32),
         Color(0xFFE0F7FA), Color(0xFFF1F8E9), Color(0xFFFFF3E0),
-        Color(0xFF263238), Color.Companion.Black
+        Color(0xFF263238), Color.Black
     )
 
     val fontFamilies = listOf(
@@ -527,10 +522,12 @@ fun EditorActionBar(
                         containerColor = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.primary,
                         indicator = { tabPositions ->
-                            TabRowDefaults.SecondaryIndicator(
-                                Modifier.tabIndicatorOffset(tabPositions[textSubTab]),
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            if (textSubTab < tabPositions.size) {
+                                TabRowDefaults.SecondaryIndicator(
+                                    modifier = Modifier.tabIndicatorOffset(tabPositions[textSubTab]),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         },
                         divider = {}
                     ) {

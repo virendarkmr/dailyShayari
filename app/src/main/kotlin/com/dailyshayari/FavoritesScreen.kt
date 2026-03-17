@@ -14,11 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -57,6 +56,7 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.dailyshayari.db.FavoriteShayariEntity
 import com.dailyshayari.db.ShayariEntity
+import com.dailyshayari.ui.components.NativeAdItem
 import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
 import com.dailyshayari.util.isHindi
@@ -64,7 +64,6 @@ import com.dailyshayari.viewmodel.FavoritesViewModel
 import dev.shreyaspatil.capturable.Capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 private val colorPalettes = listOf(
@@ -115,12 +114,25 @@ fun FavoritesScreen(onBackClick: () -> Unit) {
                     contentPadding = PaddingValues(24.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    items(favorites) { favorite ->
-                        FavoriteShayariCard(
-                            favorite = favorite,
-                            viewModel = viewModel,
-                            onRequestFullCapture = { captureTarget = it }
-                        )
+                    // Logic to inject ads every 5th position (after 4 items)
+                    val itemsWithAds = mutableListOf<Any>()
+                    favorites.forEachIndexed { index, favorite ->
+                        itemsWithAds.add(favorite)
+                        if ((index + 1) % 4 == 0) {
+                            itemsWithAds.add("AD")
+                        }
+                    }
+
+                    itemsIndexed(itemsWithAds) { _, item ->
+                        if (item is FavoriteShayariEntity) {
+                            FavoriteShayariCard(
+                                favorite = item,
+                                viewModel = viewModel,
+                                onRequestFullCapture = { captureTarget = it }
+                            )
+                        } else if (item == "AD") {
+                            NativeAdItem()
+                        }
                     }
                 }
             }

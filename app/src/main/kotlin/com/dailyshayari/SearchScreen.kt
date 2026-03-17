@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dailyshayari.db.ShayariEntity
+import com.dailyshayari.ui.components.AdBanner
 import com.dailyshayari.ui.theme.*
 import com.dailyshayari.util.copyTextToClipboard
 import com.dailyshayari.util.isHindi
@@ -95,7 +96,8 @@ fun SearchScreen(onBackClick: () -> Unit) {
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
-        }
+        },
+        bottomBar = { AdBanner() }
     ) { innerPadding ->
         Column(
             modifier = Modifier
