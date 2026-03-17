@@ -8,6 +8,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -85,6 +87,7 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.dailyshayari.db.ShayariEntity
 import com.dailyshayari.ui.components.AppWatermark
+import com.dailyshayari.ui.components.NativeAdItem
 import com.dailyshayari.ui.explore.ExploreViewModel
 import com.dailyshayari.ui.theme.NotoSansDevanagariFontFamily
 import com.dailyshayari.ui.theme.PlayfairDisplayFontFamily
@@ -245,10 +248,17 @@ fun ShayariFeed(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         items(Int.MAX_VALUE) { index ->
-            val actualIndex = index % shayaris.itemCount
-            val shayari = shayaris[actualIndex]
-            if (shayari != null) {
-                ShayariCard(shayari = shayari, onRequestFullCapture = onRequestFullCapture, viewModel = viewModel)
+            // Every 5th item (at index 4, 9, 14, etc.) we show a native ad
+            if ((index + 1) % 5 == 0) {
+                NativeAdItem()
+            } else {
+                // Calculate the actual index for the shayari item by skipping ad slots
+                val shayariIndex = index - (index / 5)
+                val actualIndex = shayariIndex % shayaris.itemCount
+                val shayari = shayaris[actualIndex]
+                if (shayari != null) {
+                    ShayariCard(shayari = shayari, onRequestFullCapture = onRequestFullCapture, viewModel = viewModel)
+                }
             }
         }
     }
