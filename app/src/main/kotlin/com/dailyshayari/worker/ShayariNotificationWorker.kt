@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.dailyshayari.MainActivity
+import com.dailyshayari.R
 import com.dailyshayari.data.Notification
 import com.dailyshayari.db.ShayariDatabase
 
@@ -68,7 +69,7 @@ class ShayariNotificationWorker(
         )
 
         val notification = NotificationCompat.Builder(applicationContext, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.mipmap.ic_launcher) // Use app icon instead of generic info icon
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

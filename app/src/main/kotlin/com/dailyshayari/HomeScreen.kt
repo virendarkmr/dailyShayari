@@ -72,6 +72,7 @@ import com.dailyshayari.util.copyTextToClipboard
 import com.dailyshayari.util.isHindi
 import com.dailyshayari.viewmodel.HomeViewModel
 import com.dailyshayari.viewmodel.HomeViewModelFactory
+import com.dailyshayari.viewmodel.NotificationViewModel
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import dev.shreyaspatil.capturable.Capturable
 import kotlinx.coroutines.delay
@@ -91,6 +92,9 @@ fun HomeScreen(
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(context, FirebaseModule.provideFirestore())
     )
+    val notificationViewModel: NotificationViewModel = viewModel()
+    val unreadNotifications by notificationViewModel.unreadNotifications.collectAsState()
+    
     val todaysShayari by viewModel.todaysShayari.collectAsState()
     val luxuryText = LocalLuxuryTextColors.current
 
@@ -100,12 +104,25 @@ fun HomeScreen(
                 title = { Text("Shayari Vibes", style = MaterialTheme.typography.headlineLarge, color = luxuryText.appTitle) },
                 navigationIcon = { AppLogo() },
                 actions = {
-                    IconButton(onClick = onNotificationClick) {
-                        Icon(
-                            imageVector = Icons.Rounded.Notifications,
-                            contentDescription = "Notifications",
-                            tint = luxuryText.appTitle
-                        )
+                    Box {
+                        IconButton(onClick = onNotificationClick) {
+                            Icon(
+                                imageVector = Icons.Rounded.Notifications,
+                                contentDescription = "Notifications",
+                                tint = luxuryText.appTitle
+                            )
+                        }
+                        if (unreadNotifications.isNotEmpty()) {
+                            Badge(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(top = 4.dp, end = 4.dp),
+                                containerColor = Color(0xFFE65100),
+                                contentColor = Color.White
+                            ) {
+                                Text(unreadNotifications.size.toString())
+                            }
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
